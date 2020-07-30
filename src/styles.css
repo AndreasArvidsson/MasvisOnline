@@ -1,0 +1,28 @@
+
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+#mainCell {
+    height: 100%;
+    width: calc(100% - 300px);
+    vertical-align: top;
+    padding: 10px 0 0 10px;
+    margin: 0;
+    overflow: auto;
+    float: left;
+}
+
+#mainDiv {
+    height: 100%;
+    width: 100%;
+    max-width: 900px;
+    padding: 0;
+    margin: 0;
+    vertical-align: top;
+}

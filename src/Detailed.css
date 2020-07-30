@@ -1,0 +1,21 @@
+
+.detailed-graph-div {
+    width: 100%;
+    height: 200px;
+}
+
+.detailed-graph-left-div {
+    width: 65%;
+    height: 300px;
+}
+
+.detailed-title {
+    width: 100%;
+    text-align: center;
+}
+
+.detailed-spinner-div {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
