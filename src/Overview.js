@@ -1,6 +1,6 @@
+import Graph from "../../owp.graph-react"; //TODO
 import React from "react";
 import PropTypes from "prop-types";
-import GraphReact from "./GraphReact";
 import Static from "./Static";
 import "./Overview.css";
 
@@ -34,14 +34,13 @@ const Overview = ({ files }) => {
                                 max: 1
                             }
                         }
+                    },
+                    spinner: {
+                        show: false
                     }
                 };
 
-                let spin;
-
                 if (f.isLoaded) {
-                    spin = false;
-
                     options.graph.dataY = f.channels.map(c => c.graph);
                     options.axes.x = {
                         tickerValuePreFormatter: Static.tickerValuePreFormatter.bind(null, f.sampleRate),
@@ -54,14 +53,12 @@ const Overview = ({ files }) => {
                     }
                 }
                 else {
-                    spin = true;
+                    options.spinner.show = true;
                 }
 
                 return (
                     <div key={f.file.name} className="overview-graph-wrapper-div">
-                        <div className="overview-graph-div">
-                            <GraphReact options={options} spin={spin} />
-                        </div>
+                        <Graph className="overview-graph-div" options={options} />
                         <table className="table overview-graph-data-table">
                             {f.isLoaded &&
                                 <tbody>

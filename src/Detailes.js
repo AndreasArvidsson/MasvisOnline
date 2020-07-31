@@ -1,9 +1,9 @@
+import Graph from "../../owp.graph-react"; //TODO
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
-import GraphReact from "./GraphReact";
 import Static from "./Static";
 import DSP from "./DSP";
-import "./Detailed.css";
+import "./Detailes.css";
 
 const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
 
@@ -58,10 +58,16 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
                 label: title,
                 align: "left",
                 size: 17
+            },
+            highlight: {
+                xMin: null,
+                xMax: null,
+                yMin: null,
+                yMax: null,
+                color: "rgba(0,0,0,0.5)"
             }
         };
 
-        let highlight;
         if (channel.loudestPart) {
             const minOffset = Math.round(file.numSamples * 0.0004);
             const loudestPartOffset = file.sampleRate * 0.05;
@@ -69,20 +75,11 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
             const offset = Math.max(minOffset, loudestPartOffset);
             const minIndex = Math.max(0, channel.loudestPart.index - offset);
             const maxIndex = minIndex + 2 * offset;
-            highlight = {
-                x1: minIndex,
-                y1: null,
-                x2: maxIndex,
-                y2: null,
-                color: "rgba(0,0,0,0.5)"
-            };
+            options.highlight.xMin = minIndex;
+            options.highlight.xMax = maxIndex;
         }
 
-        return (
-            <div className="detailed-graph-div" key={i}>
-                <GraphReact options={options} highlight={highlight} />
-            </div>
-        );
+        return <Graph key={i} className="detailed-graph-div" options={options} />;
     }
 
     const renderLoudestPart = () => {
@@ -139,11 +136,7 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
             }
         };
 
-        return (
-            <div className="detailed-graph-div">
-                <GraphReact options={options} />
-            </div>
-        );
+        return <Graph className="detailed-graph-div" options={options} />;
     };
 
     const renderAvgSpectrum = () => {
@@ -209,11 +202,7 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
             }
         };
 
-        return (
-            <div className="detailed-graph-left-div">
-                <GraphReact options={options} />
-            </div>
-        );
+        return <Graph className="detailed-graph-left-div" options={options} />;
     };
 
     const renderGraphs = () => {

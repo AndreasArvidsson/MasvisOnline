@@ -1,7 +1,6 @@
 module.exports = {
     "extends": [
         "eslint:recommended",
-        "plugin:compat/recommended",
         "plugin:react/recommended"
     ],
     "parser": "babel-eslint",
@@ -15,10 +14,6 @@ module.exports = {
         "no-console": "off"
     },
     "settings": {
-        "polyfills": [
-          "Object.assign",
-          "Promise"
-        ],
         "react": {
             "version": "detect"
         }

@@ -7,7 +7,7 @@ require("../lib/flac");
 require("../lib/mp3");
 import Sidebar from "./Sidebar";
 import Overview from "./Overview";
-import Detailed from "./Detailed";
+import Detailes from "./Detailes";
 import loadWorker from "./soundfile-load.worker";
 import detailedWorker from "./soundfile-detailed.worker";
 
@@ -152,7 +152,7 @@ const App = () => {
             <div id="mainCell">
                 <div id="mainDiv">
                     {selected
-                        ? <Detailed
+                        ? <Detailes
                             file={selected}
                             isLoaded={selected.isLoaded}
                             isDetailed={selected.isDetailed}

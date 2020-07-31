@@ -33,7 +33,6 @@
         "owp.graph": "^1.0.0"
     },
     "devDependencies": {
-        "eslint-plugin-compat": "^3.5.1",
         "webpack-dev-server": "^3.10.3"
     }
 }
