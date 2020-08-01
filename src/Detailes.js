@@ -46,8 +46,8 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
                     }
                 },
                 y: {
-                    legendValueFormatter: Static.legendformatterAmplitude.bind(null, 1),
-                    ticker: Static.tickerAmplitude.bind(null, 1),
+                    legendValueFormatter: Static.legendformatterAmplitude,
+                    ticker: Static.tickerAmplitude,
                     bounds: {
                         min: -1,
                         max: 1
@@ -121,8 +121,8 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
                     tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, file.sampleRate),
                 },
                 y: {
-                    legendValueFormatter: Static.legendformatterAmplitude.bind(null, 1),
-                    ticker: Static.tickerAmplitude.bind(null, 1),
+                    legendValueFormatter: Static.legendformatterAmplitude,
+                    ticker: Static.tickerAmplitude,
                     bounds: {
                         min: -1,
                         max: 1

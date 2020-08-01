@@ -28,7 +28,7 @@ const Overview = ({ files }) => {
                         x: {},
                         y: {
                             width: 30,
-                            ticker: Static.tickerAmplitude.bind(null, 1),
+                            ticker: Static.tickerAmplitude,
                             bounds: {
                                 min: -1,
                                 max: 1

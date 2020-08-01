@@ -1,2 +1,3 @@
 node_modules
-dropboxignore.txt
+*.txt
+package-lock.json

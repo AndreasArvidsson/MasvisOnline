@@ -5,12 +5,8 @@ Static.legendformatterTime = function (sampleRate, value) {
     return Static.round(value / sampleRate, 5) + "s";
 };
 
-Static.legendformatterAmplitude = function (maxValue, value) {
-    return Static.round(value / maxValue, 5);
-};
-
-Static.legendformatterdB = function (maxValue, value) {
-    return Static.round(value / maxValue, 5);
+Static.legendformatterAmplitude = function (value) {
+    return Static.round(value, 5);
 };
 
 Static.tickerLabelformatterTime = function (sampleRate, value) {
@@ -25,11 +21,11 @@ Static.tickerValuePostFormatter = function (max, value) {
     return value * max;
 };
 
-Static.tickerAmplitude = function (maxValue, isLog, min, max) {
+Static.tickerAmplitude = function (isLog, min, max) {
     function format(value) {
-        return Static.round(value / maxValue, 2);
+        return Static.round(value, 2);
     }
-    var range = max - min;
+    const range = max - min;
     return [
         { value: min, label: format(min) },
         { value: min + range * 0.25, label: format(min + range * 0.25) },
