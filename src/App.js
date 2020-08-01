@@ -22,12 +22,12 @@ const App = () => {
         });
     }, [files]);
 
-    const calculateDetailed = (file) => {
-        console.time(file.file.name + " - calculateDetailed");
+    const calculateDetailes = (file) => {
+        console.time(file.file.name + " - calculateDetailes");
 
         const args = {
             channels: [],
-            maxValue: file.peak,
+            peak: file.peak,
             sampleRate: file.sampleRate,
             numSamples: file.numSamples
         };
@@ -39,7 +39,7 @@ const App = () => {
         }
         workers.add(detailedWorker, args, transfer)
             .then(result => {
-                console.timeEnd(file.file.name + " - calculateDetailed");
+                console.timeEnd(file.file.name + " - calculateDetailes");
                 file.channels = result.channels;
                 file.isDetailed = true;
                 setFiles(files.slice());
@@ -95,7 +95,6 @@ const App = () => {
     }
 
     const addFiles = (newFiles) => {
-        console.log("addFiles", newFiles)
         const tmpFiles = files.slice();
         const fileNames = files.map(f => f.file.name);
         for (let i = 0; i < newFiles.length; ++i) {
@@ -129,7 +128,7 @@ const App = () => {
         tmpFiles.forEach(f => {
             //Cant be already detailed or working.
             if (!f.isDetailed && f !== selected) {
-                calculateDetailed(f);
+                calculateDetailes(f);
             }
         });
         setFiles(tmpFiles);
@@ -170,7 +169,7 @@ const App = () => {
                             file={selected}
                             isLoaded={selected.isLoaded}
                             isDetailed={selected.isDetailed}
-                            calculateDetailed={calculateDetailed}
+                            calculateDetailes={calculateDetailes}
                         />
                         : <Overview files={files} />
                     }

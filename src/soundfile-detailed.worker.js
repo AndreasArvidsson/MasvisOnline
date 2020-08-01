@@ -66,7 +66,7 @@ function calculateAvgSpectrum(data, result) {
 
 function calculateLoudestPart(data, result) {
     //Loudest part treshold.
-    const threshold = data.maxValue * 0.95;
+    const threshold = data.peak * 0.95;
     //Number of samples for a 20ms window.
     const windowSize = data.sampleRate * 0.02;
     let maxCount = 0;

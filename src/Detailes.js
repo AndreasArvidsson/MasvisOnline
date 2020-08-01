@@ -5,11 +5,11 @@ import Static from "./Static";
 import DSP from "./DSP";
 import "./Detailes.css";
 
-const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
+const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
     useEffect(() => {
         if (isLoaded && !isDetailed) {
-            calculateDetailed(file);
+            calculateDetailes(file);
         }
     }, [file, isLoaded, isDetailed]);
 
@@ -228,11 +228,11 @@ const Detailed = ({ file, isLoaded, isDetailed, calculateDetailed }) => {
     );
 };
 
-Detailed.propTypes = {
+Detailes.propTypes = {
     file: PropTypes.object.isRequired,
     isLoaded: PropTypes.bool,
     isDetailed: PropTypes.bool,
-    calculateDetailed: PropTypes.func.isRequired
+    calculateDetailes: PropTypes.func.isRequired
 };
 
-export default Detailed;
+export default Detailes;
