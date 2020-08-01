@@ -1,10 +1,8 @@
+import Feedback from "owp.feedback";
 import React from "react";
 import ReactDOM from "react-dom";
 import App from "./App";
-import Feedback from "owp.feedback";
 import "bootstrap/dist/css/bootstrap.min.css";
-// import "../lib/acore";
-// import "../lib/agraph.min";
 import "./styles.css";
 
 (function () {

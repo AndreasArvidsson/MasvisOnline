@@ -53,7 +53,13 @@ const Overview = ({ files }) => {
                     }
                 }
                 else {
-                    options.spinner.show = true;
+                    options.spinner = {
+                        show: true,
+                        radius: 15,
+                        lines: 10,
+                        length: 20,
+                        width: 7
+                    };
                 }
 
                 return (

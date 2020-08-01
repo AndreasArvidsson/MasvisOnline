@@ -14,7 +14,12 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
     }
     return (
         <div className="sidebar">
-            <input type="file" ref={inputRef} onChange={onChange} multiple />
+            <input
+                type="file"
+                ref={inputRef}
+                accept="audio/*"
+                onChange={onChange} multiple
+            />
 
             <div onClick={() => inputRef.current.click()}>
                 Add files <Glyph type="plus" />

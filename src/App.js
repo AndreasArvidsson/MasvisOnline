@@ -1,10 +1,7 @@
 import Feedback from "owp.feedback";
 import Workers from "owp.workers";
 import React, { useState, useEffect } from "react";
-const AV = require("../lib/aurora")
-window.AV = AV;
-require("../lib/flac");
-require("../lib/mp3");
+import AV from "./AV";
 import Sidebar from "./Sidebar";
 import Overview from "./Overview";
 import Detailes from "./Detailes";
@@ -59,7 +56,7 @@ const App = () => {
         console.time(file.file.name + " - total");
 
         asset.on("error", err => {
-            Feedback.error(err, { sticky: true });
+            Feedback.error(file.file.name + "\n" + err, { sticky: true });
         });
 
         let format, buffer, duration;
@@ -98,11 +95,12 @@ const App = () => {
     }
 
     const addFiles = (newFiles) => {
+        console.log("addFiles", newFiles)
         const tmpFiles = files.slice();
         const fileNames = files.map(f => f.file.name);
         for (let i = 0; i < newFiles.length; ++i) {
             const file = newFiles[i];
-            if (isSoundFile(file) && !fileNames.includes(file.name)) {
+            if (!fileNames.includes(file.name)) {
                 tmpFiles.push({
                     file,
                     isLoaded: false,
@@ -137,8 +135,24 @@ const App = () => {
         setFiles(tmpFiles);
     }
 
+    const onDrop = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (e.dataTransfer.files) {
+            console.log(e.dataTransfer.files)
+            addFiles(e.dataTransfer.files);
+        }
+    }
+
+    const onDragOver = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        //Explicitly show this is a copy.
+        e.dataTransfer.dropEffect = "copy";
+    };
+
     return (
-        <React.Fragment>
+        <div onDrop={onDrop} onDragOver={onDragOver}>
             <Sidebar
                 files={files}
                 selectedFile={selected}
@@ -163,14 +177,8 @@ const App = () => {
                 </div>
             </div>
 
-        </React.Fragment>
+        </div>
     );
 };
 
 export default App;
-
-function isSoundFile(file) {
-    const i = file.name.lastIndexOf(".");
-    const ending = file.name.substr(i + 1).toLowerCase();
-    return ending === "wav" || ending === "flac" || ending === "mp3";
-}
