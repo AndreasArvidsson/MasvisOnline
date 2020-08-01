@@ -1,4 +1,4 @@
-import Graph from "../../owp.graph-react"; //TODO
+import Graph from "owp.graph-react"; //TODO
 import React from "react";
 import PropTypes from "prop-types";
 import Static from "./Static";

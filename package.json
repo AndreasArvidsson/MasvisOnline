@@ -27,10 +27,11 @@
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "bootstrap": "^4.5.0",
-        "owp.feedback": "^1.1.1",
-        "owp.glyphicons": "^1.1.0",
-        "owp.workers": "^1.1.0",
-        "owp.graph": "^1.0.0"
+        "owp.feedback": "latest",
+        "owp.glyphicons": "latest",
+        "owp.workers": "latest",
+        "owp.graph": "latest",
+        "owp.graph-react": "latest"
     },
     "devDependencies": {
         "webpack-dev-server": "^3.10.3"
