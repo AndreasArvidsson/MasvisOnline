@@ -31,9 +31,6 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     Static.getName(i + 1)
                 ]
             },
-            interaction: {
-                smoothing: false
-            },
             axes: {
                 x: {
                     legendValueFormatter: Static.legendformatterTime.bind(null, file.sampleRate),
@@ -46,7 +43,6 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     }
                 },
                 y: {
-                    legendValueFormatter: Static.legendformatterAmplitude,
                     ticker: Static.tickerAmplitude,
                     bounds: {
                         min: -1,
@@ -95,6 +91,11 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
         const maxIndex = minIndex + 2 * offset;
 
         const options = {
+            title: {
+                label: title,
+                align: "left",
+                size: 17
+            },
             graph: {
                 dataY: [channel.graph],
                 colors: [
@@ -105,9 +106,6 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     Static.getName(0),
                     Static.getName(i + 1)
                 ]
-            },
-            interaction: {
-                smoothing: false
             },
             axes: {
                 x: {
@@ -121,18 +119,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, file.sampleRate),
                 },
                 y: {
-                    legendValueFormatter: Static.legendformatterAmplitude,
                     ticker: Static.tickerAmplitude,
                     bounds: {
                         min: -1,
                         max: 1
                     }
                 }
-            },
-            title: {
-                label: title,
-                align: "left",
-                size: 17
             }
         };
 
@@ -144,7 +136,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
         const bandwidth = DSP.FFT.calculateBandwidth(bufferSize, file.sampleRate);
 
         function legendXValueFormatter(value) {
-            return Static.round(DSP.FFT.binIndexToFreq(value, bandwidth), 5) + "Hz";
+            return Static.round(DSP.FFT.binIndexToFreq(value, bandwidth), 5);
         }
 
         function tickerXValuePreFormatter(value) {
@@ -164,21 +156,29 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             return value;
         }
 
-        const title = "Normalized average spectrum, " + Math.ceil(file.duration) + " frames";
+        function tickerYLabelFormatter(value) {
+            if (value === -10) {
+                return "dB";
+            }
+            return value;
+        }
+
         const options = {
+            title: {
+                label: "Normalized average spectrum, " + Math.ceil(file.duration) + " frames",
+                align: "left",
+                size: 17
+            },
             graph: {
                 dataY: file.channels.map(c => c.avgSpectrum),
                 names: [
-                    Static.getName(0),
+                    "Freq(Hz)",
                     ...file.channels.map((c, i) => Static.getName(i + 1))
                 ],
                 colors: [
                     Static.getColor(0),
                     ...file.channels.map((c, i) => Static.getColor(i + 1))
                 ]
-            },
-            interaction: {
-                smoothing: false
             },
             axes: {
                 x: {
@@ -193,16 +193,85 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     log: true
                 },
                 y: {
+                    tickerLabelFormatter: tickerYLabelFormatter,
+                    bounds: {
+                        min: -90,
+                        max: -10
+                    }
                 }
-            },
-            title: {
-                label: title,
-                align: "left",
-                size: 17
             }
         };
 
         return <Graph className="detailed-graph-left-div" options={options} />;
+    };
+
+    const renderAllpass = () => {
+        const max = toDb(file.allpass.maxCrest);
+        const ticks = [];
+        for (let i = 0; ; i += 5) {
+            ticks.push({
+                value: i,
+                label: i
+            });
+            if (i > max) {
+                break;
+            }
+        }
+        ticks[ticks.length - 1].label = "dB";
+
+        const dataY = [];
+        const colors = [Static.getColor(0)];
+        const names = ["F"];
+        const dashed = [];
+        file.channels.forEach((c, i) => {
+            const color = Static.getColor(i + 1);
+            const name = Static.getShortName(i + 1);
+            dataY.push(c.allpass.map(toDb));
+            colors.push(color);
+            names.push(name);
+            dashed.push(false)
+            dataY.push(new Array(c.allpass.length).fill(toDb(c.crest)));
+            colors.push(color);
+            names.push(name + "(A)");
+            dashed.push(true)
+        });
+
+        const options = {
+            interaction: {
+                trackMouse: false
+            },
+            title: {
+                label: "Allpassed crest factor",
+                align: "left",
+                size: 17
+            },
+            graph: {
+                dataX: [file.allpass.freqs],
+                dataY,
+                colors,
+                names,
+                dashed
+            },
+            axes: {
+                x: {
+                    bounds: {
+                        min: file.allpass.freqs[0],
+                        max: file.allpass.freqs[file.allpass.freqs.length - 1]
+                    },
+                    log: true
+                },
+                y: {
+                    ticker: () => ticks,
+                    bounds: {
+                        min: 0,
+                        max: ticks[ticks.length - 1].value
+                    },
+                    legendValueFormatter: value => Static.round(value, 1),
+                }
+            }
+        };
+
+        return <Graph className="detailed-graph-right-div" options={options} />;
     };
 
     const renderGraphs = () => {
@@ -214,6 +283,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 {file.channels.map(renderChannel)}
                 {renderLoudestPart()}
                 {renderAvgSpectrum()}
+                {renderAllpass()}
             </React.Fragment>
         );
     }
@@ -236,3 +306,7 @@ Detailes.propTypes = {
 };
 
 export default Detailes;
+
+function toDb(value) {
+    return 20 * Static.log10(value);
+}

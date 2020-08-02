@@ -40,7 +40,9 @@ const App = () => {
         workers.add(detailedWorker, args, transfer)
             .then(result => {
                 console.timeEnd(file.file.name + " - calculateDetailes");
-                file.channels = result.channels;
+                for(let i in result) {
+                    file[i] = result[i];
+                }
                 file.isDetailed = true;
                 setFiles(files.slice());
             })

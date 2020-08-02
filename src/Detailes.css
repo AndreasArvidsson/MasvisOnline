@@ -5,7 +5,14 @@
 }
 
 .detailed-graph-left-div {
+    display: inline-block;
     width: 65%;
+    height: 300px;
+}
+
+.detailed-graph-right-div {
+    display: inline-block;
+    width: 35%;
     height: 300px;
 }
 

@@ -8,6 +8,7 @@ onmessage = (e) => {
     };
     calculateLoudestPart(data, result);
     calculateAvgSpectrum(data, result);
+    calculateAllpass(data, result);
     const transfer = [];
     for (let i = 0; i < result.channels.length; ++i) {
         transfer.push(result.channels[i].graph.buffer);
@@ -115,4 +116,34 @@ function calculateLoudestPart(data, result) {
         count: maxCount,
         index: maxIndex + windowSize / 2
     };
+}
+
+function calculateAllpass(data, result) {
+    const freqs = [20, 60, 200, 600, 2000, 6000, 20000];
+    const outBuffer = new Float32Array(data.numSamples);
+    let maxCrest = 0;
+
+    result.channels.forEach(channel => {
+        const graph = channel.graph;
+        channel.allpass = [];
+        freqs.forEach(fc => {
+            let sqrSum = 0;
+            let peak = 0;
+
+            const allpassFilter = new DSP.allpass(fc, data.sampleRate);
+            allpassFilter.process(graph, outBuffer);
+            for (let j = 0; j < outBuffer.length; ++j) {
+                const value = outBuffer[j];
+                sqrSum += value * value;
+                peak = Math.max(peak, Math.abs(value));
+            }
+
+            const rms = Math.sqrt(sqrSum / data.numSamples)
+            const crest = peak / rms;
+            maxCrest = Math.max(maxCrest, crest);
+            channel.allpass.push(crest);
+        });
+    });
+
+    result.allpass = { freqs, maxCrest };
 }

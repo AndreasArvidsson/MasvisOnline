@@ -2,11 +2,7 @@
 const Static = {};
 
 Static.legendformatterTime = function (sampleRate, value) {
-    return Static.round(value / sampleRate, 5) + "s";
-};
-
-Static.legendformatterAmplitude = function (value) {
-    return Static.round(value, 5);
+    return Static.round(value / sampleRate, 5);
 };
 
 Static.tickerLabelformatterTime = function (sampleRate, value) {
@@ -62,6 +58,13 @@ Static.getName = function (index) {
     return names[index];
 };
 
+Static.getShortName = function (index) {
+    if (namesShort >= namesShort.length) {
+        return "Ch" + index;
+    }
+    return namesShort[index];
+};
+
 Static.log10 = (x) => Math.log(x) / Math.LN10;
 
 export default Static;
@@ -72,4 +75,5 @@ function toFixed2(val) {
 }
 
 const colors = ["#000000", "#0000FF", "#FF0000", "#800080", "#00FF00", "#8080FF", "#FF8080", "#FF00FF", "#00FFFF"];
-const names = ["Time(S)", "Left", "Right", "Center", "LFE", "Surr left", "Surr right", "unknown", "unknown"];
+const names = ["Time(S)", "Left", "Right", "Center", "LFE", "Surr left", "Surr right", "Surr back left", "Surr back right"];
+const namesShort = ["S", "L", "R", "C", "LFE", "SL", "SR", "SBL", "SBR"];

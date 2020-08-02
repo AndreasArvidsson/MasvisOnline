@@ -11,14 +11,12 @@ const Overview = ({ files }) => {
 
                 const options = {
                     interaction: {
-                        resize: true,
-                        smoothing: false,
                         trackMouse: false,
                         zoom: false
                     },
                     title: {
                         label: f.file.name,
-                        bold: true
+                        align: "left"
                     },
                     graph: {
                         compositeOperation: "darken",

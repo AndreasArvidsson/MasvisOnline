@@ -273,4 +273,56 @@ windowFunctions.Triangular = function (length) {
 
 DSP.windowFunctions = windowFunctions;
 
+/* BIQUAD */
+
+DSP.biquad = function (b0, b1, b2, a0, a1, a2) {
+    //Normalize coeffs
+    b0 / a0;
+    b1 / a0;
+    b2 / a0;
+    a1 / a0;
+    a2 / a0;
+
+    let z1 = 0;
+    let z2 = 0;
+
+    this.process = function (buffer, outBuffer) {
+        if (!outBuffer) {
+            outBuffer = buffer;
+        }
+        const length = buffer.length;
+        for (let i = 0; i < length; ++i) {
+            const data = buffer[i];
+            const out = data * b0 + z1;
+            z1 = data * b1 - out * a1 + z2;
+            z2 = data * b2 - out * a2;
+            outBuffer[i] = out;
+        }
+    }
+}
+
+/* ALLPASS */
+
+DSP.allpass = function (fc, fs) {
+    //Guard against aliasing .
+    if (fc > fs / 2.0001) {
+        fc = fs / 2.0001;
+    }
+
+    //Calculate biquad coeffs
+    const rhoB = Math.tan(Math.PI * fc / fs);
+    const pD = (1 - rhoB) / (1 + rhoB)
+    const b0 = pD;
+    const b1 = -1;
+    const b2 = 0;
+    const a0 = 1;
+    const a1 = -pD;
+    const a2 = 0;
+
+    this.process = function (buffer, bufferOut) {
+        const biquad = new DSP.biquad(b0, b1, b2, a0, a1, a2);
+        biquad.process(buffer, bufferOut);
+    }
+}
+
 export default DSP;
