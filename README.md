@@ -1,5 +1,6 @@
 # MasvisOnline
-Online sound file mastering analyzer
+Online version of [MasVis](https://www.lts.a.se/lts/masvis)    
+Audio file mastering analyzer
 
-### For info, documentation and working examples visit:
+### Try it
 http://andreasarvidsson.github.io/MasvisOnline
