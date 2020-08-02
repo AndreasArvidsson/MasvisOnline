@@ -140,7 +140,6 @@ const App = () => {
         e.stopPropagation();
         e.preventDefault();
         if (e.dataTransfer.files) {
-            console.log(e.dataTransfer.files)
             addFiles(e.dataTransfer.files);
         }
     }
