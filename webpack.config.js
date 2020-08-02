@@ -55,8 +55,11 @@ module.exports = (env, argv) => {
                     ]
                 },
                 {
-                    test: /\.(eot|woff|woff2|ttf|svg|)$/,
-                    loader: "file-loader"
+                    test: /\.(eot|woff|woff2|ttf|svg|ico)$/,
+                    loader: "file-loader",
+                    options: {
+                        name: "[name].[ext]"
+                    }
                 }
             ]
         },
