@@ -40,7 +40,7 @@ const App = () => {
         workers.add(detailedWorker, args, transfer)
             .then(result => {
                 console.timeEnd(file.file.name + " - calculateDetailes");
-                for(let i in result) {
+                for (let i in result) {
                     file[i] = result[i];
                 }
                 file.isDetailed = true;
@@ -86,7 +86,7 @@ const App = () => {
             addWorker();
         });
         asset.on("duration", d => {
-            duration = d;
+            duration = Math.floor(d / 1000);
             addWorker();
         });
 

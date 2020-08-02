@@ -27,3 +27,7 @@ body,
     margin: 0;
     vertical-align: top;
 }
+
+.graph-row {
+    white-space: nowrap;
+}

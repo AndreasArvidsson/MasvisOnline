@@ -1,4 +1,4 @@
-import Graph from "owp.graph-react"; //TODO
+import Graph from "owp.graph-react";
 import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import Static from "./Static";
@@ -20,6 +20,13 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
         const title = Static.getName(i + 1) + ": Crest=" + crest + "dB, RMS=" + rms + "dBFS, Peak=" + peak + "dBFS";
 
         const options = {
+            interaction: {
+                trackMouse: false,
+            },
+            title: Static.getTitle(title),
+            border: {
+                width: "1px"
+            },
             graph: {
                 dataY: [channel.graph],
                 colors: [
@@ -49,11 +56,6 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                         max: 1
                     }
                 }
-            },
-            title: {
-                label: title,
-                align: "left",
-                size: 17
             },
             highlight: {
                 xMin: null,
@@ -91,10 +93,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
         const maxIndex = minIndex + 2 * offset;
 
         const options = {
-            title: {
-                label: title,
-                align: "left",
-                size: 17
+            interaction: {
+                trackMouse: false,
+            },
+            title: Static.getTitle(title),
+            border: {
+                width: "1px"
             },
             graph: {
                 dataY: [channel.graph],
@@ -163,11 +167,15 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             return value;
         }
 
+        const title = "Normalized average spectrum, " + Math.ceil(file.duration) + " frames";
+
         const options = {
-            title: {
-                label: "Normalized average spectrum, " + Math.ceil(file.duration) + " frames",
-                align: "left",
-                size: 17
+            interaction: {
+                trackMouse: false,
+            },
+            title: Static.getTitle(title),
+            border: {
+                width: "1px"
             },
             graph: {
                 dataY: file.channels.map(c => c.avgSpectrum),
@@ -178,7 +186,11 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 colors: [
                     Static.getColor(0),
                     ...file.channels.map((c, i) => Static.getColor(i + 1))
-                ]
+                ],
+                lineWidth: 0.5,
+                // smoothing: 0,
+                // simplify: 0,
+
             },
             axes: {
                 x: {
@@ -187,7 +199,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     tickerValuePostFormatter: tickerXValuePostFormatter,
                     tickerLabelFormatter: tickerXLabelFormatter,
                     bounds: {
-                        min: DSP.FFT.freqToBinIndex(10, bandwidth),
+                        min: DSP.FFT.freqToBinIndex(20, bandwidth),
                         max: DSP.FFT.freqToBinIndex(20000, bandwidth)
                     },
                     log: true
@@ -240,10 +252,9 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             interaction: {
                 trackMouse: false
             },
-            title: {
-                label: "Allpassed crest factor",
-                align: "left",
-                size: 17
+            title: Static.getTitle("Allpassed crest factor"),
+            border: {
+                width: "1px"
             },
             graph: {
                 dataX: [file.allpass.freqs],
@@ -282,8 +293,10 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             <React.Fragment>
                 {file.channels.map(renderChannel)}
                 {renderLoudestPart()}
-                {renderAvgSpectrum()}
-                {renderAllpass()}
+                <div className="graph-row">
+                    {renderAvgSpectrum()}
+                    {renderAllpass()}
+                </div>
             </React.Fragment>
         );
     }

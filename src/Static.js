@@ -31,12 +31,11 @@ Static.tickerAmplitude = function (isLog, min, max) {
     ];
 };
 
-Static.toDb = function (value) {
-    if (value === 0) {
-        return 0;
+Static.toDb = function (value, decimals) {
+    if (!decimals) {
+        decimals = 2;
     }
-    value = 20 * (Static.log10(value));
-    return toFixed2(value);
+    return Static.round(value, decimals);
 };
 
 Static.round = function (value, decimals) {
@@ -65,14 +64,18 @@ Static.getShortName = function (index) {
     return namesShort[index];
 };
 
+Static.getTitle = function (title) {
+    return {
+        label: title,
+        align: "left",
+        size: 17,
+        padding: 0
+    }
+}
+
 Static.log10 = (x) => Math.log(x) / Math.LN10;
 
 export default Static;
-
-function toFixed2(val) {
-    val = val.toFixed(2);
-    return val !== "-0.00" ? val : "0.00";
-}
 
 const colors = ["#000000", "#0000FF", "#FF0000", "#800080", "#00FF00", "#8080FF", "#FF8080", "#FF00FF", "#00FFFF"];
 const names = ["Time(S)", "Left", "Right", "Center", "LFE", "Surr left", "Surr right", "Surr back left", "Surr back right"];

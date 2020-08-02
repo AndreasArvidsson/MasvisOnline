@@ -1,28 +1,23 @@
 
-.detailed-graph-div {
-    width: 100%;
-    height: 200px;
-}
-
-.detailed-graph-left-div {
-    display: inline-block;
-    width: 65%;
-    height: 300px;
-}
-
-.detailed-graph-right-div {
-    display: inline-block;
-    width: 35%;
-    height: 300px;
-}
-
 .detailed-title {
     width: 100%;
     text-align: center;
 }
 
-.detailed-spinner-div {
-    position: relative;
-    width: 100%;
-    height: 200px;
+.detailed-graph-div {
+    width: 762px;
+    height: 130px;
+}
+
+.detailed-graph-left-div {
+    display: inline-block;
+    width: 510px;
+    height: 230px;
+}
+
+.detailed-graph-right-div {
+    display: inline-block;
+    width: 260px;
+    height: 230px;
+    margin-left: -20px;
 }

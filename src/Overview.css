@@ -1,23 +1,28 @@
-.overview-graph-wrapper-div {
-    width: 100%;
-    height: 150px;
-}
 
 .overview-graph-div {
-    width: calc(100% - 160px);
-    height: 100%;
     display: inline-block;
+    width: 665px;
+    height: 77px; 
 }
 
-table.overview-graph-data-table {
-    width: 160px;
+.overview-graph-data-table {
     display: inline-block;
-    background-color: transparent!important;
-    margin-left: -20px;
+    width: 120px;
+    height: 77px; 
+    margin-left: -15px;
+    position: relative;
 }
 
-table.overview-graph-data-table > tbody > tr > td  {
-    border: none;
-    padding-top: 0;
-    padding-bottom: 5px;
+.overview-graph-data-table table {
+    position: absolute;
+    bottom: 5px;
+    height: 50px;
+}
+
+.overview-graph-data-table td  {
+    padding: 0;
+}
+
+.overview-graph-data-table td:first-child  {
+    text-align: right;
 }

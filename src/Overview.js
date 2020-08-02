@@ -14,23 +14,20 @@ const Overview = ({ files }) => {
                         trackMouse: false,
                         zoom: false
                     },
-                    title: {
-                        label: f.file.name,
-                        align: "left"
+                    title: Static.getTitle(f.file.name),
+                    border: {
+                        width: "1px"
                     },
                     graph: {
                         compositeOperation: "darken",
                         lineWidth: 1.000001
                     },
                     axes: {
-                        x: {},
+                        x: {
+                            show: false
+                        },
                         y: {
-                            width: 30,
-                            ticker: Static.tickerAmplitude,
-                            bounds: {
-                                min: -1,
-                                max: 1
-                            }
+                            show: false
                         }
                     },
                     spinner: {
@@ -40,42 +37,32 @@ const Overview = ({ files }) => {
 
                 if (f.isLoaded) {
                     options.graph.dataY = f.channels.map(c => c.graph);
-                    options.axes.x = {
-                        tickerValuePreFormatter: Static.tickerValuePreFormatter.bind(null, f.sampleRate),
-                        tickerValuePostFormatter: Static.tickerValuePostFormatter.bind(null, f.sampleRate),
-                        tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, f.sampleRate),
-                        bounds: {
-                            min: 0,
-                            max: f.numSamples
-                        }
-                    }
                 }
                 else {
                     options.spinner = {
                         show: true,
-                        radius: 15,
-                        lines: 10,
-                        length: 20,
-                        width: 7
+                        radius: 10,
+                        lines: 9,
+                        length: 10,
+                        width: 5
                     };
                 }
 
                 return (
-                    <div key={f.file.name} className="overview-graph-wrapper-div">
+                    <div key={f.file.name} className="graph-row">
                         <Graph className="overview-graph-div" options={options} />
-                        <table className="table overview-graph-data-table">
-                            {f.isLoaded &&
-                                <tbody>
-                                    <tr><td>#Ch:</td><td>{f.numChannels}</td></tr>
-                                    <tr><td>Crest:</td><td>{Static.toDb(f.crest)}dB</td></tr>
-                                    <tr><td>Peak:</td><td>{Static.toDb(f.peak)}dBFS</td></tr>
-                                    <tr><td>RMS:</td><td>{Static.toDb(f.rms)}dBFS</td></tr>
-                                </tbody>
-                            }
-                        </table>
+                        <div className="overview-graph-data-table">
+                            <table>
+                                {f.isLoaded &&
+                                    <tbody>
+                                        <tr><td>Crest</td><td>&nbsp;= {Static.toDb(f.crest, 1)} dB</td></tr>
+                                        <tr><td>Peak</td><td>&nbsp;= {Static.toDb(f.peak, 1)} dBFS</td></tr>
+                                    </tbody>
+                                }
+                            </table>
+                        </div>
                     </div>
                 );
-
             })}
         </div>
     );
