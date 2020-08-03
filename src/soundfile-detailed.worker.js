@@ -9,6 +9,7 @@ onmessage = (e) => {
     calculateLoudestPart(data, result);
     calculateAvgSpectrum(data, result);
     calculateAllpass(data, result);
+    calculateHistogram(data, result);
     const transfer = [];
     for (let i = 0; i < result.channels.length; ++i) {
         transfer.push(result.channels[i].graph.buffer);
@@ -147,3 +148,47 @@ function calculateAllpass(data, result) {
 
     result.allpass = { freqs, maxCrest };
 }
+
+function calculateHistogram(data) {
+    const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
+    data.channels.forEach(channel => {
+        const res = new Float32Array(Math.pow(2, data.bitDepth));
+        const graph = channel.graph;
+        for (let i = 0; i < graph.length; ++i) {
+            ++res[
+                Math.round((graph[i] + 1) * maxValue)
+            ];
+        }
+
+        const used = {};
+        let peak = 0;
+        let count = 0;
+        for (let i = 0; i < res.length; ++i) {
+            if (res[i] && !used[i]) {
+                used[i] = true;
+                ++count;
+                peak = Math.max(peak, res[i]);
+            }
+        }
+
+        console.log("hist", Math.log2(count))
+
+        channel.histogram = {
+            graph: res,
+            bits: Math.log2(count),
+            peak
+        };
+    });
+}
+
+/*
+hist 14.51945197314515
+hist 14.51945197314515
+
+hist 14.488530573855371
+hist 14.488530573855371
+
+hist 14.51945197314515 soundfile-detailed.worker.js:187:13
+hist 14.488530573855371
+
+ */

@@ -29,7 +29,8 @@ const App = () => {
             channels: [],
             peak: file.peak,
             sampleRate: file.sampleRate,
-            numSamples: file.numSamples
+            numSamples: file.numSamples,
+            bitDepth: file.bitDepth
         };
         //Transfer channels to new thread. Increased performance instead of copy.
         const transfer = [];
@@ -40,9 +41,7 @@ const App = () => {
         workers.add(detailedWorker, args, transfer)
             .then(result => {
                 console.timeEnd(file.file.name + " - calculateDetailes");
-                for (let i in result) {
-                    file[i] = result[i];
-                }
+                Object.assign(file, result);
                 file.isDetailed = true;
                 setFiles(files.slice());
             })
@@ -55,7 +54,6 @@ const App = () => {
         const asset = AV.Asset.fromFile(file.file);
 
         console.time(file.file.name + " - decodeToBuffer");
-        console.time(file.file.name + " - total");
 
         asset.on("error", err => {
             Feedback.error(file.file.name + "\n" + err, { sticky: true });
@@ -70,7 +68,6 @@ const App = () => {
                 workers.add(loadWorker, { format, duration, buffer }, [buffer.buffer])
                     .then(result => {
                         console.timeEnd(file.file.name + " - loadBasic");
-                        console.timeEnd(file.file.name + " - total");
                         Object.assign(file, result);
                         file.isLoaded = true;
                         setFiles(files.slice());

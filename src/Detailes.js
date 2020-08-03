@@ -5,6 +5,8 @@ import Static from "./Static";
 import DSP from "./DSP";
 import "./Detailes.css";
 
+const yWidth = 40;
+
 const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
     useEffect(() => {
@@ -24,23 +26,16 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 trackMouse: false,
             },
             title: Static.getTitle(title),
-            border: {
-                width: "1px"
-            },
+            border: Static.getBorder(),
             graph: {
                 dataY: [channel.graph],
                 colors: [
                     Static.getColor(0),
                     Static.getColor(i + 1)
-                ],
-                names: [
-                    Static.getName(0),
-                    Static.getName(i + 1)
                 ]
             },
             axes: {
                 x: {
-                    legendValueFormatter: Static.legendformatterTime.bind(null, file.sampleRate),
                     tickerValuePreFormatter: Static.tickerValuePreFormatter.bind(null, file.sampleRate),
                     tickerValuePostFormatter: Static.tickerValuePostFormatter.bind(null, file.sampleRate),
                     tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, file.sampleRate),
@@ -51,6 +46,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 },
                 y: {
                     ticker: Static.tickerAmplitude,
+                    width: yWidth,
                     bounds: {
                         min: -1,
                         max: 1
@@ -94,21 +90,15 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
         const options = {
             interaction: {
-                trackMouse: false,
+                trackMouse: false
             },
             title: Static.getTitle(title),
-            border: {
-                width: "1px"
-            },
+            border: Static.getBorder(),
             graph: {
                 dataY: [channel.graph],
                 colors: [
                     Static.getColor(0),
                     Static.getColor(i + 1)
-                ],
-                names: [
-                    Static.getName(0),
-                    Static.getName(i + 1)
                 ]
             },
             axes: {
@@ -117,12 +107,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                         min: minIndex,
                         max: maxIndex
                     },
-                    legendValueFormatter: Static.legendformatterTime.bind(null, file.sampleRate),
                     tickerValuePreFormatter: Static.tickerValuePreFormatter.bind(null, file.sampleRate),
                     tickerValuePostFormatter: Static.tickerValuePostFormatter.bind(null, file.sampleRate),
                     tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, file.sampleRate),
                 },
                 y: {
+                    width: yWidth,
                     ticker: Static.tickerAmplitude,
                     bounds: {
                         min: -1,
@@ -138,10 +128,6 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     const renderAvgSpectrum = () => {
         const bufferSize = DSP.FFT.calculatePow2Size(file.sampleRate);
         const bandwidth = DSP.FFT.calculateBandwidth(bufferSize, file.sampleRate);
-
-        function legendXValueFormatter(value) {
-            return Static.round(DSP.FFT.binIndexToFreq(value, bandwidth), 5);
-        }
 
         function tickerXValuePreFormatter(value) {
             return DSP.FFT.binIndexToFreq(value, bandwidth);
@@ -174,27 +160,16 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 trackMouse: false,
             },
             title: Static.getTitle(title),
-            border: {
-                width: "1px"
-            },
+            border: Static.getBorder(),
             graph: {
                 dataY: file.channels.map(c => c.avgSpectrum),
-                names: [
-                    "Freq(Hz)",
-                    ...file.channels.map((c, i) => Static.getName(i + 1))
-                ],
                 colors: [
                     Static.getColor(0),
                     ...file.channels.map((c, i) => Static.getColor(i + 1))
-                ],
-                lineWidth: 0.5,
-                // smoothing: 0,
-                // simplify: 0,
-
+                ]
             },
             axes: {
                 x: {
-                    legendValueFormatter: legendXValueFormatter,
                     tickerValuePreFormatter: tickerXValuePreFormatter,
                     tickerValuePostFormatter: tickerXValuePostFormatter,
                     tickerLabelFormatter: tickerXLabelFormatter,
@@ -205,6 +180,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     log: true
                 },
                 y: {
+                    width: yWidth,
                     tickerLabelFormatter: tickerYLabelFormatter,
                     bounds: {
                         min: -90,
@@ -233,18 +209,14 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
         const dataY = [];
         const colors = [Static.getColor(0)];
-        const names = ["F"];
         const dashed = [];
         file.channels.forEach((c, i) => {
             const color = Static.getColor(i + 1);
-            const name = Static.getShortName(i + 1);
             dataY.push(c.allpass.map(toDb));
             colors.push(color);
-            names.push(name);
             dashed.push(false)
             dataY.push(new Array(c.allpass.length).fill(toDb(c.crest)));
             colors.push(color);
-            names.push(name + "(A)");
             dashed.push(true)
         });
 
@@ -253,14 +225,11 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 trackMouse: false
             },
             title: Static.getTitle("Allpassed crest factor"),
-            border: {
-                width: "1px"
-            },
+            border: Static.getBorder(),
             graph: {
                 dataX: [file.allpass.freqs],
                 dataY,
                 colors,
-                names,
                 dashed
             },
             axes: {
@@ -272,17 +241,70 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     log: true
                 },
                 y: {
+                    width: yWidth,
                     ticker: () => ticks,
                     bounds: {
                         min: 0,
                         max: ticks[ticks.length - 1].value
-                    },
-                    legendValueFormatter: value => Static.round(value, 1),
+                    }
                 }
             }
         };
 
         return <Graph className="detailed-graph-right-div" options={options} />;
+    };
+
+    const renderHistogram = () => {
+        const maxValue = Math.pow(2, file.bitDepth - 1) - 1;
+
+        function valueToIndex(value) {
+            return Math.round((value + 1) * maxValue);
+        }
+
+        const ticks = [];
+        for (let i = -1; i <= 1; i += 0.2) {
+            i = Static.round(i, 1);
+            ticks.push({
+                value: valueToIndex(i),
+                label: i
+            });
+        }
+
+        const peak = Math.max(...file.channels.map(c => c.histogram.peak));
+        const bits = file.channels.map(c => Static.round(c.histogram.bits, 1));
+        const options = {
+            interaction: {
+                trackMouse: false
+            },
+            title: Static.getTitle(`Histogram, "bits": ${bits.join("/")}`),
+            border: Static.getBorder(),
+            graph: {
+                dataY: file.channels.map(c => c.histogram.graph),
+                colors: [
+                    Static.getColor(0),
+                    ...file.channels.map((c, i) => Static.getColor(i + 1))
+                ]
+            },
+            axes: {
+                x: {
+                    bounds: {
+                        min: valueToIndex(-1.1),
+                        max: valueToIndex(1.1)
+                    },
+                    ticker: () => ticks
+                },
+                y: {
+                    width: yWidth,
+                    log: true,
+                    bounds: {
+                        min: 1,
+                        max: peak
+                    }
+                }
+            }
+        };
+
+        return <Graph className="detailed-graph-left-div" options={options} />;
     };
 
     const renderGraphs = () => {
@@ -296,6 +318,9 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 <div className="graph-row">
                     {renderAvgSpectrum()}
                     {renderAllpass()}
+                </div>
+                <div className="graph-row">
+                    {renderHistogram()}
                 </div>
             </React.Fragment>
         );

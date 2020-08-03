@@ -5,19 +5,19 @@
 }
 
 .detailed-graph-div {
-    width: 762px;
+    width: 760px;
     height: 130px;
 }
 
 .detailed-graph-left-div {
     display: inline-block;
-    width: 510px;
+    width: 501px;
     height: 230px;
 }
 
 .detailed-graph-right-div {
     display: inline-block;
-    width: 260px;
+    width: 257px;
     height: 230px;
     margin-left: -20px;
 }

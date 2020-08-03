@@ -73,6 +73,12 @@ Static.getTitle = function (title) {
     }
 }
 
+Static.getBorder = function () {
+    return {
+        width: "1px"
+    };
+}
+
 Static.log10 = (x) => Math.log(x) / Math.LN10;
 
 export default Static;
