@@ -35,6 +35,7 @@ Static.toDb = function (value, decimals) {
     if (!decimals) {
         decimals = 2;
     }
+    value = 20 * Static.log10(value);
     return Static.round(value, decimals);
 };
 
