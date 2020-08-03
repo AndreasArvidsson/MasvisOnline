@@ -237,45 +237,33 @@
 .table-col-icon {
     width: 31px;
 }
-.overview-graph-wrapper-div {
-    width: 100%;
-    height: 150px;
-}
 
 .overview-graph-div {
-    width: calc(100% - 160px);
-    height: 100%;
     display: inline-block;
+    width: 665px;
+    height: 77px; 
 }
 
-table.overview-graph-data-table {
-    width: 160px;
+.overview-graph-data-table {
     display: inline-block;
-    background-color: transparent!important;
-    margin-left: -20px;
+    width: 120px;
+    height: 77px; 
+    margin-left: -15px;
+    position: relative;
 }
 
-table.overview-graph-data-table > tbody > tr > td  {
-    border: none;
-    padding-top: 0;
-    padding-bottom: 5px;
+.overview-graph-data-table table {
+    position: absolute;
+    bottom: 5px;
+    height: 50px;
 }
 
-.detailed-graph-div {
-    width: 100%;
-    height: 200px;
+.overview-graph-data-table td  {
+    padding: 0;
 }
 
-.detailed-graph-left-div {
-    display: inline-block;
-    width: 65%;
-    height: 300px;
-}
-
-.detailed-graph-right-div {
-    display: inline-block;
-    width: 35%;
-    height: 300px;
+.overview-graph-data-table td:first-child  {
+    text-align: right;
 }
 
 .detailed-title {
@@ -283,10 +271,22 @@ table.overview-graph-data-table > tbody > tr > td  {
     text-align: center;
 }
 
-.detailed-spinner-div {
-    position: relative;
-    width: 100%;
-    height: 200px;
+.detailed-graph-div {
+    width: 760px;
+    height: 130px;
+}
+
+.detailed-graph-left-div {
+    display: inline-block;
+    width: 501px;
+    height: 230px;
+}
+
+.detailed-graph-right-div {
+    display: inline-block;
+    width: 257px;
+    height: 230px;
+    margin-left: -20px;
 }
 /*!
  * Bootstrap v4.5.0 (https://getbootstrap.com/)
@@ -322,4 +322,8 @@ body,
     padding: 0;
     margin: 0;
     vertical-align: top;
+}
+
+.graph-row {
+    white-space: nowrap;
 }

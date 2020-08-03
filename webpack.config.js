@@ -19,7 +19,10 @@ module.exports = (env, argv) => {
             rules: [
                 {
                     test: /\.worker.js$/,
-                    loader: "worker-loader"
+                    loader: "worker-loader",
+                    options: {
+                        name: "[name].[ext]"
+                    }
                 },
                 {
                     test: /\.js$/,
