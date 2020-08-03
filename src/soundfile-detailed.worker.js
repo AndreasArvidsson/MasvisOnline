@@ -1,6 +1,8 @@
 import Static from "./Static";
 import DSP from "./DSP";
 
+const showTimer = true;
+
 onmessage = (e) => {
     const data = e.data;
     const result = {
@@ -14,59 +16,15 @@ onmessage = (e) => {
     for (let i = 0; i < result.channels.length; ++i) {
         transfer.push(result.channels[i].graph.buffer);
         transfer.push(result.channels[i].avgSpectrum.buffer);
+        transfer.push(result.channels[i].histogram.graph.buffer);
     }
     postMessage(result, transfer);
 };
 
-function calculateAvgSpectrum(data, result) {
-    //Number of frames/seconds that are summed together.
-    const numFrames = Math.ceil(data.numSamples / data.sampleRate);
-    const bufferSize = DSP.FFT.calculatePow2Size(data.sampleRate);
-    const outSize = bufferSize / 2;
-
-    const blackman = DSP.windowFunctions.Blackman(data.sampleRate).getData();
-    const fft = new DSP.FFT(bufferSize);
-
-    for (let c = 0; c < result.channels.length; ++c) {
-        const channel = result.channels[c];
-        const graph = channel.graph;
-        const seconds = new Float32Array(outSize);
-
-        //Loop over each second and sum FFT components together.
-        const length = graph.length;
-        for (let s = 0; s < length;) {
-            const max = Math.min(s + data.sampleRate, length);
-            const second = new Float32Array(bufferSize);
-            //1sec blackman window.
-            for (let i = 0; s < max; ++s, ++i) {
-                second[i] += graph[s] * blackman[i];
-            }
-
-            //FFT
-            fft.fft(second);
-            const real = fft.getReal();
-            const imag = fft.getImaginary();
-
-            for (let i = 0; i < outSize; ++i) {
-                const realVal = real[i] / data.sampleRate;
-                const imagVal = imag[i] / data.sampleRate;
-                //Add square sum to total.
-                seconds[i] += realVal * realVal + imagVal * imagVal;
-            }
-        }
-
-        const rms = channel.rms;
-        for (let i = 0; i < outSize; ++i) {
-            //Convert real + imag to normalized dB spectrum.
-            seconds[i] = 20 * Static.log10(Math.sqrt(seconds[i] / numFrames) / rms);
-        }
-
-        //Remove padded data above outSize.
-        result.channels[c].avgSpectrum = seconds.subarray(0, outSize);
-    }
-}
-
 function calculateLoudestPart(data, result) {
+    if (showTimer) {
+        console.time("calculateLoudestPart");
+    }
     //Loudest part treshold.
     const threshold = data.peak * 0.95;
     //Number of samples for a 20ms window.
@@ -117,28 +75,99 @@ function calculateLoudestPart(data, result) {
         count: maxCount,
         index: maxIndex + windowSize / 2
     };
+    if (showTimer) {
+        console.timeEnd("calculateLoudestPart");
+    }
 }
 
-function calculateAllpass(data, result) {
-    const freqs = [20, 60, 200, 600, 2000, 6000, 20000];
-    const outBuffer = new Float32Array(data.numSamples);
-    let maxCrest = 0;
+function calculateAvgSpectrum(data, result) {
+    if (showTimer) {
+        console.time("calculateAvgSpectrum");
+    }
+    //Number of frames/seconds that are summed together.
+    const numFrames = Math.ceil(data.numSamples / data.sampleRate);
+    const bufferSize = DSP.FFT.calculatePow2Size(data.sampleRate);
+    const outSize = bufferSize / 2;
+
+    const blackman = DSP.windowFunctions.Blackman(data.sampleRate).getData();
+    const fft = new DSP.FFT(bufferSize, data.sampleRate);
+    const second = new Float32Array(bufferSize);
 
     result.channels.forEach(channel => {
         const graph = channel.graph;
-        channel.allpass = [];
-        freqs.forEach(fc => {
-            let sqrSum = 0;
-            let peak = 0;
+        const res = new Float32Array(outSize);
 
-            const allpassFilter = new DSP.allpass(fc, data.sampleRate);
-            allpassFilter.process(graph, outBuffer);
-            for (let j = 0; j < outBuffer.length; ++j) {
-                const value = outBuffer[j];
-                sqrSum += value * value;
-                peak = Math.max(peak, Math.abs(value));
+        //Loop over each second and sum FFT components together.
+        const length = graph.length;
+        for (let i = 0; i < length;) {
+            const max = Math.min(i + data.sampleRate, length);
+
+            //1sec blackman window.
+            let s = 0;
+            for (; i < max; ++i, ++s) {
+                second[s] = graph[i] * blackman[s];
+            }
+            //Fill rest of window with zeros.
+            for (; s < bufferSize; ++s) {
+                second[s] = 0;
             }
 
+            //FFT
+            fft.fft(second);
+            const real = fft.getReal();
+            const imag = fft.getImaginary();
+
+            for (let j = 0; j < outSize; ++j) {
+                //Add square sum to total.
+                res[j] += real[j] * real[j] + imag[j] * imag[j];
+            }
+        }
+
+        const rms = channel.rms;
+        const div = data.sampleRate * data.sampleRate * numFrames;
+        for (let i = 0; i < outSize; ++i) {
+            //Convert square sum to normalized dB spectrum.
+            res[i] = 20 * Static.log10(Math.sqrt(res[i] / div) / rms);
+        }
+
+        //Remove padded data above outSize.
+        channel.avgSpectrum = res;
+    });
+    if (showTimer) {
+        console.timeEnd("calculateAvgSpectrum");
+    }
+}
+
+function calculateAllpass(data, result) {
+    if (showTimer) {
+        console.time("calculateAllpass");
+    }
+    const freqs = [20, 60, 200, 600, 2000, 6000, 20000];
+    let maxCrest = 0;
+
+    result.channels.forEach(channel => {
+        channel.allpass = [];
+        freqs.forEach(fc => {
+            const graph = channel.graph;
+            const allpassFilter = new DSP.allpass(fc, data.sampleRate);
+            let sqrSum = 0;
+            let peakMax = 0;
+            let peakMin = 0;
+
+            for (let i = 0; i < graph.length; ++i) {
+                const value = allpassFilter.processSample(graph[i]);
+                sqrSum += value * value;
+
+                //Optimized version of: peak = Math.max(peak, Math.abs(value))
+                if (value > peakMax) {
+                    peakMax = value;
+                }
+                else if (value < peakMin) {
+                    peakMin = value;
+                }
+            }
+
+            const peak = Math.max(peakMax, Math.abs(peakMin));
             const rms = Math.sqrt(sqrSum / data.numSamples)
             const crest = peak / rms;
             maxCrest = Math.max(maxCrest, crest);
@@ -147,9 +176,16 @@ function calculateAllpass(data, result) {
     });
 
     result.allpass = { freqs, maxCrest };
+
+    if (showTimer) {
+        console.timeEnd("calculateAllpass");
+    }
 }
 
 function calculateHistogram(data) {
+    if (showTimer) {
+        console.time("calculateHistogram");
+    }
     const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
     data.channels.forEach(channel => {
         const res = new Float32Array(Math.pow(2, data.bitDepth));
@@ -171,24 +207,13 @@ function calculateHistogram(data) {
             }
         }
 
-        console.log("hist", Math.log2(count))
-
         channel.histogram = {
             graph: res,
             bits: Math.log2(count),
             peak
         };
     });
+    if (showTimer) {
+        console.timeEnd("calculateHistogram");
+    }
 }
-
-/*
-hist 14.51945197314515
-hist 14.51945197314515
-
-hist 14.488530573855371
-hist 14.488530573855371
-
-hist 14.51945197314515 soundfile-detailed.worker.js:187:13
-hist 14.488530573855371
-
- */

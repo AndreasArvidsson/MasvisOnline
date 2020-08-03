@@ -8,11 +8,17 @@ import Detailes from "./Detailes";
 import loadWorker from "./soundfile-load.worker";
 import detailedWorker from "./soundfile-detailed.worker";
 
+function useForceUpdate() {
+    const [value, setValue] = useState(0);
+    return () => setValue(value + 1);
+}
+
 const workers = new Workers();
 
 const App = () => {
     const [files, setFiles] = useState([]);
     const [selected, setSelected] = useState(null);
+    const forceUpdate = useForceUpdate();
 
     useEffect(() => {
         files.forEach(f => {
@@ -23,6 +29,11 @@ const App = () => {
     }, [files]);
 
     const calculateDetailes = (file) => {
+        if (file.isCalculating) {
+            return;
+        }
+        file.isCalculating = true;
+
         console.time(file.file.name + " - calculateDetailes");
 
         const args = {
@@ -43,7 +54,8 @@ const App = () => {
                 console.timeEnd(file.file.name + " - calculateDetailes");
                 Object.assign(file, result);
                 file.isDetailed = true;
-                setFiles(files.slice());
+                delete file.isCalculating;
+                forceUpdate();
             })
             .catch(err => {
                 Feedback.error(err, { sticky: true });
@@ -51,13 +63,12 @@ const App = () => {
     }
 
     const loadFile = (file) => {
-        const asset = AV.Asset.fromFile(file.file);
+        if (file.isLoading) {
+            return;
+        }
+        file.isLoading = true;
 
         console.time(file.file.name + " - decodeToBuffer");
-
-        asset.on("error", err => {
-            Feedback.error(file.file.name + "\n" + err, { sticky: true });
-        });
 
         let format, buffer, duration;
 
@@ -70,7 +81,8 @@ const App = () => {
                         console.timeEnd(file.file.name + " - loadBasic");
                         Object.assign(file, result);
                         file.isLoaded = true;
-                        setFiles(files.slice());
+                        delete file.isLoading;
+                        forceUpdate();
                     })
                     .catch(err => {
                         Feedback.error(err, { sticky: true });
@@ -78,6 +90,10 @@ const App = () => {
             }
         };
 
+        const asset = AV.Asset.fromFile(file.file);
+        asset.on("error", err => {
+            Feedback.error(file.file.name + "\n" + err, { sticky: true });
+        });
         asset.on("format", f => {
             format = f;
             addWorker();
@@ -86,7 +102,6 @@ const App = () => {
             duration = Math.floor(d / 1000);
             addWorker();
         });
-
         asset.decodeToBuffer(b => {
             buffer = b;
             addWorker();
@@ -130,7 +145,6 @@ const App = () => {
                 calculateDetailes(f);
             }
         });
-        setFiles(tmpFiles);
     }
 
     const onDrop = (e) => {

@@ -286,18 +286,22 @@ DSP.biquad = function (b0, b1, b2, a0, a1, a2) {
     let z1 = 0;
     let z2 = 0;
 
-    this.process = function (buffer, outBuffer) {
+    this.processBuffer = function (buffer, outBuffer) {
         if (!outBuffer) {
             outBuffer = buffer;
         }
-        const length = buffer.length;
-        for (let i = 0; i < length; ++i) {
-            const data = buffer[i];
-            const out = data * b0 + z1;
-            z1 = data * b1 - out * a1 + z2;
-            z2 = data * b2 - out * a2;
+        for (let i = 0; i < buffer.length; ++i) {
+            const out = buffer[i] * b0 + z1;
+            z1 = buffer[i] * b1 - out * a1 + z2;
+            z2 = buffer[i] * b2 - out * a2;
             outBuffer[i] = out;
         }
+    }
+    this.processSample = function (sample) {
+        const out = sample * b0 + z1;
+        z1 = sample * b1 - out * a1 + z2;
+        z2 = sample * b2 - out * a2;
+        return out;
     }
 }
 
@@ -319,10 +323,7 @@ DSP.allpass = function (fc, fs) {
     const a1 = -pD;
     const a2 = 0;
 
-    this.process = function (buffer, bufferOut) {
-        const biquad = new DSP.biquad(b0, b1, b2, a0, a1, a2);
-        biquad.process(buffer, bufferOut);
-    }
+    return new DSP.biquad(b0, b1, b2, a0, a1, a2);
 }
 
 export default DSP;
