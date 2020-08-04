@@ -141,7 +141,7 @@ const App = () => {
         const tmpFiles = files.slice();
         tmpFiles.forEach(f => {
             //Cant be already detailed or working.
-            if (!f.isDetailed && f !== selected) {
+            if (f.isLoaded && !f.isDetailed && f !== selected) {
                 calculateDetailes(f);
             }
         });
