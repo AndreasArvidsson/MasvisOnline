@@ -130,8 +130,7 @@ function calculateAvgSpectrum(data, result) {
             res[i] = 20 * Static.log10(Math.sqrt(res[i] / div) / rms);
         }
 
-        //Remove padded data above outSize.
-        channel.avgSpectrum = res.subarray(0, outSize);
+        channel.avgSpectrum = res;
     });
     if (showTimer) {
         console.timeEnd("calculateAvgSpectrum");
