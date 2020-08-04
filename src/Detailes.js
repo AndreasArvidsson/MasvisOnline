@@ -16,10 +16,15 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     }, [file, isLoaded, isDetailed]);
 
     const renderChannel = (channel, i) => {
-        const crest = Static.toDb(channel.crest);
-        const rms = Static.toDb(channel.rms);
-        const peak = Static.toDb(channel.peak);
-        const title = Static.getName(i + 1) + ": Crest=" + crest + "dB, RMS=" + rms + "dBFS, Peak=" + peak + "dBFS";
+        const crest = Static.toDb(channel.crest, 2);
+        const rms = Static.toDb(channel.rms, 2);
+        const peak = Static.toDb(channel.peak, 2);
+        const title = Static.getName(i + 1)
+            + ": Crest=" + crest
+            + " dB, RMS="
+            + rms
+            + " dBFS, Peak="
+            + peak + " dBFS";
 
         const options = {
             interaction: {
@@ -128,6 +133,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     const renderAvgSpectrum = () => {
         const bufferSize = DSP.FFT.calculatePow2Size(file.sampleRate);
         const bandwidth = DSP.FFT.calculateBandwidth(bufferSize, file.sampleRate);
+        const maxFreq = 20000;
 
         function tickerXValuePreFormatter(value) {
             return DSP.FFT.binIndexToFreq(value, bandwidth);
@@ -137,13 +143,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             return DSP.FFT.freqToBinIndex(value, bandwidth);
         }
 
-        function tickerXLabelFormatter(value) {
-            value = DSP.FFT.binIndexToFreq(value, bandwidth);
-            if (value >= 1000) {
-                value /= 1000;
-                value += "k";
+        function tickerXLabelFormatter(index) {
+            const value = DSP.FFT.binIndexToFreq(index, bandwidth);
+            if (value === maxFreq) {
+                return "kHz";
             }
-            return value;
+            return Static.round(value / 1000, 1);
         }
 
         function tickerYLabelFormatter(value) {
@@ -175,7 +180,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     tickerLabelFormatter: tickerXLabelFormatter,
                     bounds: {
                         min: DSP.FFT.freqToBinIndex(20, bandwidth),
-                        max: DSP.FFT.freqToBinIndex(20000, bandwidth)
+                        max: DSP.FFT.freqToBinIndex(maxFreq, bandwidth)
                     },
                     log: true
                 },
@@ -194,7 +199,8 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     };
 
     const renderAllpass = () => {
-        const max = toDb(file.allpass.maxCrest);
+        const max = Static.toDb(file.allpass.maxCrest);
+        const maxFreq = file.allpass.freqs[file.allpass.freqs.length - 1];
         const ticks = [];
         for (let i = 0; ; i += 5) {
             ticks.push({
@@ -206,16 +212,22 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         }
         ticks[ticks.length - 1].label = "dB";
+        function tickerXLabelFormatter(value) {
+            if (value === maxFreq) {
+                return "kHz";
+            }
+            return Static.round(value / 1000, 1);
+        }
 
         const dataY = [];
         const colors = [Static.getColor(0)];
         const dashed = [];
         file.channels.forEach((c, i) => {
             const color = Static.getColor(i + 1);
-            dataY.push(c.allpass.map(toDb));
+            dataY.push(c.allpass.map(Static.toDb));
             colors.push(color);
             dashed.push(false)
-            dataY.push(new Array(c.allpass.length).fill(toDb(c.crest)));
+            dataY.push(new Array(c.allpass.length).fill(Static.toDb(c.crest)));
             colors.push(color);
             dashed.push(true)
         });
@@ -234,9 +246,10 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
+                    tickerLabelFormatter: tickerXLabelFormatter,
                     bounds: {
                         min: file.allpass.freqs[0],
-                        max: file.allpass.freqs[file.allpass.freqs.length - 1]
+                        max: maxFreq
                     },
                     log: true
                 },
@@ -261,16 +274,18 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             return Math.round((value + 1) * maxValue);
         }
 
-        const ticks = [];
-        for (let i = -1; i <= 1; i += 0.2) {
-            i = Static.round(i, 1);
-            ticks.push({
-                value: valueToIndex(i),
-                label: i
-            });
+        function tickerX() {
+            const res = [];
+            for (let i = -1; i <= 1; i += 0.2) {
+                i = Static.round(i, 1);
+                res.push({
+                    value: valueToIndex(i),
+                    label: i
+                });
+            }
+            return res;
         }
 
-        const peak = Math.max(...file.channels.map(c => c.histogram.peak));
         const bits = file.channels.map(c => Static.round(c.histogram.bits, 1));
         const options = {
             interaction: {
@@ -287,24 +302,70 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
+                    ticker: tickerX,
                     bounds: {
                         min: valueToIndex(-1.1),
                         max: valueToIndex(1.1)
-                    },
-                    ticker: () => ticks
+                    }
                 },
                 y: {
                     width: yWidth,
                     log: true,
                     bounds: {
                         min: 1,
-                        max: peak
+                        max: Math.pow(2, file.bitDepth)
                     }
                 }
             }
         };
 
         return <Graph className="detailed-graph-left-div" options={options} />;
+    };
+
+    const renderPeakVsRms = () => {
+        function ticker() {
+            const res = [{ value: 0, label: "dBFS" }];
+            for (let i = -50; i < 0; i += 10) {
+                res.push({ value: i, label: i });
+            }
+            return res;
+        }
+        const options = {
+            interaction: {
+                trackMouse: false
+            },
+            title: Static.getTitle("Peak vs RMS level"),
+            border: Static.getBorder(),
+            graph: {
+                lineWidth: 0,
+                markerRadius: 3,
+                dataX: file.channels.map(c => c.peakVsRms.dataX),
+                dataY: file.channels.map(c => c.peakVsRms.dataY),
+                colors: [
+                    Static.getColor(0),
+                    ...file.channels.map((c, i) => Static.getColor(i + 1))
+                ]
+            },
+            axes: {
+                x: {
+                    ticker,
+                    bounds: {
+                        min: -50,
+                        max: 0
+                    }
+                },
+                y: {
+                    width: yWidth,
+                    ticker,
+                    bounds: {
+                        min: -50,
+                        max: 0
+                    }
+                }
+            }
+        };
+
+        return <Graph className="detailed-graph-right-div" options={options} />;
     };
 
     const renderGraphs = () => {
@@ -321,6 +382,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 </div>
                 <div className="graph-row">
                     {renderHistogram()}
+                    {renderPeakVsRms()}
                 </div>
             </React.Fragment>
         );
@@ -344,7 +406,3 @@ Detailes.propTypes = {
 };
 
 export default Detailes;
-
-function toDb(value) {
-    return 20 * Static.log10(value);
-}

@@ -32,11 +32,10 @@ Static.tickerAmplitude = function (isLog, min, max) {
 };
 
 Static.toDb = function (value, decimals) {
-    if (!decimals) {
-        decimals = 2;
+    if (decimals) {
+        return Static.round(20 * log10(value), decimals);
     }
-    value = 20 * Static.log10(value);
-    return Static.round(value, decimals);
+    return 20 * log10(value);
 };
 
 Static.round = function (value, decimals) {
@@ -80,9 +79,9 @@ Static.getBorder = function () {
     };
 }
 
-Static.log10 = (x) => Math.log(x) / Math.LN10;
-
 export default Static;
+
+const log10 = (x) => Math.log(x) / Math.LN10;
 
 const colors = ["#000000", "#0000FF", "#FF0000", "#800080", "#00FF00", "#8080FF", "#FF8080", "#FF00FF", "#00FFFF"];
 const names = ["Time(S)", "Left", "Right", "Center", "LFE", "Surr left", "Surr right", "Surr back left", "Surr back right"];

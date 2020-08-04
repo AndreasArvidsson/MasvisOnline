@@ -12,12 +12,15 @@ onmessage = (e) => {
     calculateAvgSpectrum(data, result);
     calculateAllpass(data, result);
     calculateHistogram(data, result);
+    calculatePeakVsRms(data, result);
     const transfer = [];
-    for (let i = 0; i < result.channels.length; ++i) {
-        transfer.push(result.channels[i].graph.buffer);
-        transfer.push(result.channels[i].avgSpectrum.buffer);
-        transfer.push(result.channels[i].histogram.graph.buffer);
-    }
+    result.channels.forEach(channel => {
+        transfer.push(channel.graph.buffer);
+        transfer.push(channel.avgSpectrum.buffer);
+        transfer.push(channel.histogram.graph.buffer);
+        transfer.push(channel.peakVsRms.dataX.buffer);
+        transfer.push(channel.peakVsRms.dataY.buffer);
+    });
     postMessage(result, transfer);
 };
 
@@ -85,7 +88,6 @@ function calculateAvgSpectrum(data, result) {
         console.time("calculateAvgSpectrum");
     }
     //Number of frames/seconds that are summed together.
-    const numFrames = Math.ceil(data.numSamples / data.sampleRate);
     const bufferSize = DSP.FFT.calculatePow2Size(data.sampleRate);
     const outSize = bufferSize / 2;
 
@@ -124,10 +126,10 @@ function calculateAvgSpectrum(data, result) {
         }
 
         const rms = channel.rms;
-        const div = data.sampleRate * data.sampleRate * numFrames;
+        const div = data.sampleRate * length;
         for (let i = 0; i < outSize; ++i) {
             //Convert square sum to normalized dB spectrum.
-            res[i] = 20 * Static.log10(Math.sqrt(res[i] / div) / rms);
+            res[i] = Static.toDb(Math.sqrt(res[i] / div) / rms);
         }
 
         channel.avgSpectrum = res;
@@ -214,5 +216,54 @@ function calculateHistogram(data) {
     });
     if (showTimer) {
         console.timeEnd("calculateHistogram");
+    }
+}
+
+function calculatePeakVsRms(data, result) {
+    if (showTimer) {
+        console.time("calculatePeakVsRms");
+    }
+    result.channels.forEach(channel => {
+        const graph = channel.graph;
+        const numFrames = Math.ceil(data.numSamples / data.sampleRate);
+        const dataX = new Float32Array(numFrames);
+        const dataY = new Float32Array(numFrames);
+
+        //Loop over each second and calculate rms and peak.
+        const length = graph.length;
+
+        let s = 0;
+        for (let i = 0; i < length; ++s) {
+            const numSamples = Math.min(data.sampleRate, length - i);
+            const max = i + numSamples;
+
+            let sqrSum = 0;
+            let peakMax = 0;
+            let peakMin = 0;
+
+            //1sec window
+            for (; i < max; ++i) {
+                const value = graph[i];
+                sqrSum += value * value;
+
+                //Optimized version of: peak = Math.max(peak, Math.abs(value))
+                if (value > peakMax) {
+                    peakMax = value;
+                }
+                else if (value < peakMin) {
+                    peakMin = value;
+                }
+            }
+
+            const peak = Math.max(peakMax, Math.abs(peakMin));
+            const rms = Math.sqrt(sqrSum / numSamples);
+            dataX[s] = Static.toDb(rms);
+            dataY[s] = Static.toDb(peak);
+        }
+
+        channel.peakVsRms = { dataX, dataY };
+    });
+    if (showTimer) {
+        console.timeEnd("calculatePeakVsRms");
     }
 }
