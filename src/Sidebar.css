@@ -1,7 +1,7 @@
 
 .sidebar {
     vertical-align: top;
-    width: 300px;
+    width: 500px;
     height: 100%;
     padding: 0;
     border-right: solid 1px;
@@ -20,7 +20,8 @@
 }
 
 .sidebar-table-wrapper {
-    overflow: auto;
+    width: 100%;
+    overflow: hidden;
     max-height: calc(100% - 100px);
 }
 
@@ -28,7 +29,7 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 300px;
+    width: 500px;
     border-top: solid 1px;
 }
 
