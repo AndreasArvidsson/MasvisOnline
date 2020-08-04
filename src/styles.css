@@ -11,7 +11,7 @@ body,
 
 #mainCell {
     height: 100%;
-    width: calc(100% - 300px);
+    width: calc(100% - 500px);
     vertical-align: top;
     padding: 10px 0 0 10px;
     margin: 0;
