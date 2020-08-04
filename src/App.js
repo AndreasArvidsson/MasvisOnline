@@ -1,16 +1,17 @@
 import Feedback from "owp.feedback";
 import Workers from "owp.workers";
 import React, { useState, useEffect } from "react";
-import AV from "./AV";
 import Sidebar from "./Sidebar";
 import Overview from "./Overview";
 import Detailes from "./Detailes";
 import loadWorker from "./soundfile-load.worker";
 import detailedWorker from "./soundfile-detailed.worker";
 
+let nextState = 1;
 function useForceUpdate() {
+    /* eslint-disable-next-line no-unused-vars */
     const [value, setValue] = useState(0);
-    return () => setValue(value + 1);
+    return () => setValue(nextState++);
 }
 
 const workers = new Workers();
@@ -27,6 +28,27 @@ const App = () => {
             }
         });
     }, [files]);
+
+    const loadFile = (file) => {
+        if (file.isLoading) {
+            return;
+        }
+        file.isLoading = true;
+
+        console.time(file.file.name + " - loadFile and data");
+
+        workers.add(loadWorker, { file: file.file })
+            .then(result => {
+                console.timeEnd(file.file.name + " - loadFile and data");
+                Object.assign(file, result);
+                file.isLoaded = true;
+                delete file.isLoading;
+                forceUpdate();
+            })
+            .catch(err => {
+                Feedback.error(err, { sticky: true });
+            });
+    }
 
     const calculateDetailes = (file) => {
         if (file.isCalculating) {
@@ -60,52 +82,6 @@ const App = () => {
             .catch(err => {
                 Feedback.error(err, { sticky: true });
             });
-    }
-
-    const loadFile = (file) => {
-        if (file.isLoading) {
-            return;
-        }
-        file.isLoading = true;
-
-        console.time(file.file.name + " - decodeToBuffer");
-
-        let format, buffer, duration;
-
-        const addWorker = () => {
-            if (format && buffer && duration) {
-                console.timeEnd(file.file.name + " - decodeToBuffer");
-                console.time(file.file.name + " - loadBasic");
-                workers.add(loadWorker, { format, duration, buffer }, [buffer.buffer])
-                    .then(result => {
-                        console.timeEnd(file.file.name + " - loadBasic");
-                        Object.assign(file, result);
-                        file.isLoaded = true;
-                        delete file.isLoading;
-                        forceUpdate();
-                    })
-                    .catch(err => {
-                        Feedback.error(err, { sticky: true });
-                    });
-            }
-        };
-
-        const asset = AV.Asset.fromFile(file.file);
-        asset.on("error", err => {
-            Feedback.error(file.file.name + "\n" + err, { sticky: true });
-        });
-        asset.on("format", f => {
-            format = f;
-            addWorker();
-        });
-        asset.on("duration", d => {
-            duration = Math.floor(d / 1000);
-            addWorker();
-        });
-        asset.decodeToBuffer(b => {
-            buffer = b;
-            addWorker();
-        });
     }
 
     const addFiles = (newFiles) => {
@@ -173,7 +149,6 @@ const App = () => {
                 removeAllFiles={removeAllFiles}
                 analyzeAll={analyzeAll}
             />
-
             <div id="mainCell">
                 <div id="mainDiv">
                     {selected
@@ -187,7 +162,6 @@ const App = () => {
                     }
                 </div>
             </div>
-
         </div>
     );
 };

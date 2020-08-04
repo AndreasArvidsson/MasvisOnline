@@ -1,5 +1,4 @@
 const AV = require("../lib/aurora")
-window.AV = AV;
 require("../lib/alac");
 require("../lib/flac");
 require("../lib/mp3");
