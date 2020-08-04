@@ -18,8 +18,9 @@ onmessage = (e) => {
         transfer.push(channel.graph.buffer);
         transfer.push(channel.avgSpectrum.buffer);
         transfer.push(channel.histogram.graph.buffer);
-        transfer.push(channel.peakVsRms.dataX.buffer);
-        transfer.push(channel.peakVsRms.dataY.buffer);
+        transfer.push(channel.peakVsRms.peak.buffer);
+        transfer.push(channel.peakVsRms.rms.buffer);
+        transfer.push(channel.peakVsRms.crest.buffer);
     });
     postMessage(result, transfer);
 };
@@ -223,11 +224,15 @@ function calculatePeakVsRms(data, result) {
     if (showTimer) {
         console.time("calculatePeakVsRms");
     }
+    let checksum = 0;
+    const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
+    const maxValueNeg = -(Math.pow(2, data.bitDepth - 1) - 1);
     result.channels.forEach(channel => {
         const graph = channel.graph;
         const numFrames = Math.ceil(data.numSamples / data.sampleRate);
-        const dataX = new Float32Array(numFrames);
-        const dataY = new Float32Array(numFrames);
+        const rmsRes = new Float32Array(numFrames);
+        const peakRes = new Float32Array(numFrames);
+        const crestRes = new Float32Array(numFrames);
 
         //Loop over each second and calculate rms and peak.
         const length = graph.length;
@@ -246,23 +251,31 @@ function calculatePeakVsRms(data, result) {
                 const value = graph[i];
                 sqrSum += value * value;
 
-                //Optimized version of: peak = Math.max(peak, Math.abs(value))
-                if (value > peakMax) {
-                    peakMax = value;
+                if (value < 0) {
+                    checksum += Math.ceil(value * maxValueNeg) ** 2;
+                    if (value < peakMin) {
+                        peakMin = value;
+                    }
                 }
-                else if (value < peakMin) {
-                    peakMin = value;
+                else {
+                    checksum += Math.ceil(value * maxValue) ** 2;
+                    if (value > peakMax) {
+                        peakMax = value;
+                    }
                 }
             }
 
+            //Optimized version of: peak = Math.max(peak, Math.abs(value))
             const peak = Math.max(peakMax, Math.abs(peakMin));
             const rms = Math.sqrt(sqrSum / numSamples);
-            dataX[s] = Static.toDb(rms);
-            dataY[s] = Static.toDb(peak);
+            rmsRes[s] = Static.toDb(rms);
+            peakRes[s] = Static.toDb(peak);
+            crestRes[s] = Static.toDb(peak / rms);
         }
 
-        channel.peakVsRms = { dataX, dataY };
+        channel.peakVsRms = { peak: peakRes, rms: rmsRes, crest: crestRes };
     });
+    result.checksum = checksum;
     if (showTimer) {
         console.timeEnd("calculatePeakVsRms");
     }
