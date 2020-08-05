@@ -4,25 +4,38 @@
     text-align: center;
 }
 
-.detailed-graph-div {
+.detailed-graph-channel {
     width: 760px;
     height: 130px;
 }
 
-.detailed-graph-left-div {
+.detailed-graph-avgspectrum,
+.detailed-graph-histogram,
+.detailed-graph-allpass,
+.detailed-graph-peakvsrms {
     display: inline-block;
-    width: 501px;
     height: 230px;
 }
 
-.detailed-graph-right-div {
-    display: inline-block;
+.detailed-graph-avgspectrum {
+    width: 501px;
+}
+
+.detailed-graph-histogram {
+    width: 499px;
+}
+
+.detailed-graph-allpass {
     width: 257px;
-    height: 230px;
     margin-left: -20px;
 }
 
-.detailed-graph-div-bottom {
+.detailed-graph-peakvsrms {
+    width: 248px;
+    margin-left: -20px;
+}
+
+.detailed-graph-shortterm{
     width: 748px;
     height: 148px;
 }

@@ -1,12 +1,8 @@
 
 const Static = {};
 
-Static.legendformatterTime = function (sampleRate, value) {
-    return Static.round(value / sampleRate, 5);
-};
-
-Static.tickerLabelformatterTime = function (sampleRate, value) {
-    return Static.round(value / sampleRate, 3);
+Static.tickerLabelformatterTime = function (sampleRate, value, defaultFormatter) {
+    return defaultFormatter(value / sampleRate);
 };
 
 Static.tickerValuePreFormatter = function (max, value) {
@@ -15,20 +11,6 @@ Static.tickerValuePreFormatter = function (max, value) {
 
 Static.tickerValuePostFormatter = function (max, value) {
     return value * max;
-};
-
-Static.tickerAmplitude = function (isLog, min, max) {
-    function format(value) {
-        return Static.round(value, 2);
-    }
-    const range = max - min;
-    return [
-        { value: min, label: format(min) },
-        { value: min + range * 0.25, label: format(min + range * 0.25) },
-        { value: min + range * 0.5, label: format(min + range * 0.5) },
-        { value: min + range * 0.75, label: format(min + range * 0.75) },
-        { value: max, label: format(max) }
-    ];
 };
 
 Static.toDb = function (value, decimals) {

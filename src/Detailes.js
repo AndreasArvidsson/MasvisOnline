@@ -41,6 +41,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
+                    numTicks: 20,
                     tickerValuePreFormatter: Static.tickerValuePreFormatter.bind(null, file.sampleRate),
                     tickerValuePostFormatter: Static.tickerValuePostFormatter.bind(null, file.sampleRate),
                     tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, file.sampleRate),
@@ -50,7 +51,6 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     }
                 },
                 y: {
-                    ticker: Static.tickerAmplitude,
                     width: yWidth,
                     bounds: {
                         min: -1,
@@ -78,7 +78,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             options.highlight.xMax = maxIndex;
         }
 
-        return <Graph key={i} className="detailed-graph-div" options={options} />;
+        return <Graph key={i} className="detailed-graph-channel" options={options} />;
     }
 
     const renderLoudestPart = () => {
@@ -108,17 +108,17 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
-                    bounds: {
-                        min: minIndex,
-                        max: maxIndex
-                    },
+                    numTicks: 20,
                     tickerValuePreFormatter: Static.tickerValuePreFormatter.bind(null, file.sampleRate),
                     tickerValuePostFormatter: Static.tickerValuePostFormatter.bind(null, file.sampleRate),
                     tickerLabelFormatter: Static.tickerLabelformatterTime.bind(null, file.sampleRate),
+                    bounds: {
+                        min: minIndex,
+                        max: maxIndex
+                    }
                 },
                 y: {
                     width: yWidth,
-                    ticker: Static.tickerAmplitude,
                     bounds: {
                         min: -1,
                         max: 1
@@ -127,7 +127,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-div" options={options} />;
+        return <Graph className="detailed-graph-channel" options={options} />;
     };
 
     const renderAvgSpectrum = () => {
@@ -143,19 +143,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             return DSP.FFT.freqToBinIndex(value, bandwidth);
         }
 
-        function tickerXLabelFormatter(index) {
+        function tickerXLabelFormatter(index, defaultFormatter) {
             const value = DSP.FFT.binIndexToFreq(index, bandwidth);
             if (value === maxFreq) {
-                return "kHz";
+                return "Hz";
             }
-            return Static.round(value / 1000, 1);
-        }
-
-        function tickerYLabelFormatter(value) {
-            if (value === -10) {
-                return "dB";
-            }
-            return value;
+            return defaultFormatter(value);
         }
 
         const title = "Normalized average spectrum, " + Math.ceil(file.duration) + " frames";
@@ -186,7 +179,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 },
                 y: {
                     width: yWidth,
-                    tickerLabelFormatter: tickerYLabelFormatter,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, -10, "dB"),
                     bounds: {
                         min: -90,
                         max: -10
@@ -195,30 +188,11 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-left-div" options={options} />;
+        return <Graph className="detailed-graph-avgspectrum" options={options} />;
     };
 
     const renderAllpass = () => {
-        const max = Static.toDb(file.allpass.maxCrest);
         const maxFreq = file.allpass.freqs[file.allpass.freqs.length - 1];
-        const ticks = [];
-        for (let i = 0; ; i += 5) {
-            ticks.push({
-                value: i,
-                label: i
-            });
-            if (i > max) {
-                break;
-            }
-        }
-        ticks[ticks.length - 1].label = "dB";
-        function tickerXLabelFormatter(value) {
-            if (value === maxFreq) {
-                return "kHz";
-            }
-            return Static.round(value / 1000, 1);
-        }
-
         const dataY = [];
         const colors = [Static.getColor(0)];
         const dashed = [];
@@ -246,25 +220,25 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
-                    tickerLabelFormatter: tickerXLabelFormatter,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, maxFreq, "Hz"),
+                    log: true,
                     bounds: {
                         min: file.allpass.freqs[0],
                         max: maxFreq
-                    },
-                    log: true
+                    }
                 },
                 y: {
                     width: yWidth,
-                    ticker: () => ticks,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, 30, "dB"),
                     bounds: {
                         min: 0,
-                        max: ticks[ticks.length - 1].value
+                        max: 30
                     }
                 }
             }
         };
 
-        return <Graph className="detailed-graph-right-div" options={options} />;
+        return <Graph className="detailed-graph-allpass" options={options} />;
     };
 
     const renderHistogram = () => {
@@ -274,16 +248,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             return Math.round((value + 1) * maxValue);
         }
 
-        function tickerX() {
-            const res = [];
-            for (let i = -1; i <= 1; i += 0.2) {
-                i = Static.round(i, 1);
-                res.push({
-                    value: valueToIndex(i),
-                    label: i
-                });
-            }
-            return res;
+        function indexToValue(index) {
+            return index / maxValue - 1;
+        }
+
+        function tickerLabelFormatter(value, defaultFormatter) {
+            return defaultFormatter(indexToValue(value));
         }
 
         const bits = file.channels.map(c => Static.round(c.histogram.bits, 1));
@@ -301,8 +271,13 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 ]
             },
             axes: {
+                tickLabels: {
+                    width: 25,
+                },
                 x: {
-                    ticker: tickerX,
+                    tickerValuePreFormatter: indexToValue,
+                    tickerValuePostFormatter: valueToIndex,
+                    tickerLabelFormatter,
                     bounds: {
                         min: valueToIndex(-1.1),
                         max: valueToIndex(1.1)
@@ -319,17 +294,10 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-left-div" options={options} />;
+        return <Graph className="detailed-graph-histogram" options={options} />;
     };
 
     const renderPeakVsRms = () => {
-        function ticker() {
-            const res = [{ value: 0, label: "dBFS" }];
-            for (let i = -50; i < 0; i += 10) {
-                res.push({ value: i, label: i });
-            }
-            return res;
-        }
         const options = {
             interaction: {
                 trackMouse: false
@@ -348,7 +316,8 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
-                    ticker,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, 0, "dBFS"),
+                    numTicks: 6,
                     bounds: {
                         min: -50,
                         max: 0
@@ -356,7 +325,8 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 },
                 y: {
                     width: yWidth,
-                    ticker,
+                    numTicks: 6,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, 0, "dBFS"),
                     bounds: {
                         min: -50,
                         max: 0
@@ -365,16 +335,10 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-right-div" options={options} />;
+        return <Graph className="detailed-graph-peakvsrms" options={options} />;
     };
 
     const renderShortTermCrest = () => {
-        function tickerLabelFormatter(maxValue, maxLabel, value) {
-            if (value === maxValue) {
-                return maxLabel;
-            }
-            return value;
-        }
         const maxX = file.channels[0].peakVsRms.crest.length;
         const title = "Short term (1 s) crest factor        Checksum (energy): "
             + getChecksumString(file.checksum);
@@ -395,6 +359,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
+                    numTicks: 20,
                     tickerLabelFormatter: tickerLabelFormatter.bind(null, maxX, "s"),
                     bounds: {
                         min: 0,
@@ -412,7 +377,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-div-bottom" options={options} />;
+        return <Graph className="detailed-graph-shortterm" options={options} />;
     }
 
     const renderGraphs = () => {
@@ -437,12 +402,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     }
 
     return (
-        <div>
+        <React.Fragment>
             <h2 className="detailed-title ">
                 {file.file.name}
             </h2>
             {renderGraphs()}
-        </div>
+        </React.Fragment>
     );
 };
 
@@ -462,4 +427,11 @@ function getChecksumString(checksum) {
         parts.push(str.substring(i - 3, i));
     }
     return parts.reverse().join(" ");
+}
+
+function tickerLabelFormatter(maxValue, maxLabel, value, defaultFormatter) {
+    if (value === maxValue) {
+        return maxLabel;
+    }
+    return defaultFormatter(value);
 }

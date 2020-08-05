@@ -145,7 +145,6 @@ function calculateAllpass(data, result) {
         console.time("calculateAllpass");
     }
     const freqs = [20, 60, 200, 600, 2000, 6000, 20000];
-    let maxCrest = 0;
 
     result.channels.forEach(channel => {
         channel.allpass = [];
@@ -171,13 +170,11 @@ function calculateAllpass(data, result) {
 
             const peak = Math.max(peakMax, Math.abs(peakMin));
             const rms = Math.sqrt(sqrSum / data.numSamples)
-            const crest = peak / rms;
-            maxCrest = Math.max(maxCrest, crest);
-            channel.allpass.push(crest);
+            channel.allpass.push(peak / rms);
         });
     });
 
-    result.allpass = { freqs, maxCrest };
+    result.allpass = { freqs };
 
     if (showTimer) {
         console.timeEnd("calculateAllpass");
