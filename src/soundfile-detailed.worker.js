@@ -223,7 +223,7 @@ function calculatePeakVsRms(data, result) {
     }
     let checksum = 0;
     const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
-    const maxValueNeg = -(Math.pow(2, data.bitDepth - 1) - 1);
+    const maxValueNeg = -Math.pow(2, data.bitDepth - 1);
     result.channels.forEach(channel => {
         const graph = channel.graph;
         const numFrames = Math.ceil(data.numSamples / data.sampleRate);
