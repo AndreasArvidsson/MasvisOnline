@@ -184,9 +184,13 @@
     width: 1em;
 }
 
+.sidebar,
+.sidebar-bottom {
+    width: 500px;
+}
+
 .sidebar {
     vertical-align: top;
-    width: 300px;
     height: 100%;
     padding: 0;
     border-right: solid 1px;
@@ -199,13 +203,13 @@
 
 .sidebar > div:nth-child(2),
 .sidebar > div:nth-child(3) {
-    /* font-weight: bold; */
     padding: 8px;
     border-bottom: 1px solid;
 }
 
 .sidebar-table-wrapper {
-    overflow: auto;
+    width: 100%;
+    overflow: hidden;
     max-height: calc(100% - 100px);
 }
 
@@ -213,7 +217,6 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 300px;
     border-top: solid 1px;
 }
 
@@ -271,25 +274,38 @@
     text-align: center;
 }
 
-.detailed-graph-div {
+.detailed-graph-channel {
     width: 760px;
     height: 130px;
 }
 
-.detailed-graph-left-div {
+.detailed-graph-avgspectrum,
+.detailed-graph-histogram,
+.detailed-graph-allpass,
+.detailed-graph-peakvsrms {
     display: inline-block;
-    width: 501px;
     height: 230px;
 }
 
-.detailed-graph-right-div {
-    display: inline-block;
+.detailed-graph-avgspectrum {
+    width: 501px;
+}
+
+.detailed-graph-histogram {
+    width: 499px;
+}
+
+.detailed-graph-allpass {
     width: 257px;
-    height: 230px;
     margin-left: -20px;
 }
 
-.detailed-graph-div-bottom {
+.detailed-graph-peakvsrms {
+    width: 248px;
+    margin-left: -20px;
+}
+
+.detailed-graph-shortterm{
     width: 748px;
     height: 148px;
 }
@@ -312,7 +328,7 @@ body,
 
 #mainCell {
     height: 100%;
-    width: calc(100% - 300px);
+    width: calc(100% - 500px);
     vertical-align: top;
     padding: 10px 0 0 10px;
     margin: 0;
