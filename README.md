@@ -5,6 +5,9 @@ Audio file mastering analyzer
 ## Try it
 http://andreasarvidsson.github.io/MasvisOnline
 
+## Understanding the graphs
+https://lts.a.se/lts/manual
+
 ## Features
 
 * Most common formats are supported: wav, flac, mp3, alac.
