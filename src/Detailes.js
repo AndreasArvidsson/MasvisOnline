@@ -78,7 +78,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             options.highlight.xMax = maxIndex;
         }
 
-        return <Graph key={i} className="detailed-graph-channel" options={options} />;
+        return <Graph key={i} className="detailes-graph-channel" options={options} />;
     }
 
     const renderLoudestPart = () => {
@@ -127,7 +127,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-channel" options={options} />;
+        return <Graph className="detailes-graph-channel" options={options} />;
     };
 
     const renderAvgSpectrum = () => {
@@ -188,7 +188,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-avgspectrum" options={options} />;
+        return <Graph className="detailes-graph-avgspectrum" options={options} />;
     };
 
     const renderAllpass = () => {
@@ -238,7 +238,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-allpass" options={options} />;
+        return <Graph className="detailes-graph-allpass" options={options} />;
     };
 
     const renderHistogram = () => {
@@ -294,7 +294,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-histogram" options={options} />;
+        return <Graph className="detailes-graph-histogram" options={options} />;
     };
 
     const renderPeakVsRms = () => {
@@ -335,7 +335,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-peakvsrms" options={options} />;
+        return <Graph className="detailes-graph-peakvsrms" options={options} />;
     };
 
     const renderShortTermCrest = () => {
@@ -377,7 +377,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             }
         };
 
-        return <Graph className="detailed-graph-shortterm" options={options} />;
+        return <Graph className="detailes-graph-shortterm" options={options} />;
     }
 
     const renderGraphs = () => {
@@ -402,12 +402,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     }
 
     return (
-        <React.Fragment>
-            <h2 className="detailed-title ">
+        <div className="main" id="main-details">
+            <h2 className="detailes-title">
                 {file.file.name}
             </h2>
             {renderGraphs()}
-        </React.Fragment>
+        </div>
     );
 };
 

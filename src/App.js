@@ -1,5 +1,6 @@
 import Feedback from "owp.feedback";
 import Workers from "owp.workers";
+import downloadImage from "owp.get-html-as-image";
 import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Overview from "./Overview";
@@ -28,6 +29,19 @@ const App = () => {
             }
         });
     }, [files]);
+
+    const saveImage = () => {
+        if (selected) {
+            let name = selected.file.name;
+            if (name.includes(".")) {
+                name = name.substring(0, name.lastIndexOf("."));
+            }
+            downloadImage("main-details", "masvis-online " + name + ".png");
+        }
+        else {
+            downloadImage("main-overview", "masvis-online overview.png");
+        }
+    }
 
     const loadFile = (file) => {
         if (file.isLoading) {
@@ -148,19 +162,18 @@ const App = () => {
                 removeFile={removeFile}
                 removeAllFiles={removeAllFiles}
                 analyzeAll={analyzeAll}
+                saveImage={saveImage}
             />
             <div id="mainCell">
-                <div id="mainDiv">
-                    {selected
-                        ? <Detailes
-                            file={selected}
-                            isLoaded={selected.isLoaded}
-                            isDetailed={selected.isDetailed}
-                            calculateDetailes={calculateDetailes}
-                        />
-                        : <Overview files={files} />
-                    }
-                </div>
+                {selected
+                    ? <Detailes
+                        file={selected}
+                        isLoaded={selected.isLoaded}
+                        isDetailed={selected.isDetailed}
+                        calculateDetailes={calculateDetailes}
+                    />
+                    : <Overview files={files} />
+                }
             </div>
         </div>
     );

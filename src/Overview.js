@@ -6,7 +6,7 @@ import "./Overview.css";
 
 const Overview = ({ files }) => {
     return (
-        <div>
+        <div className="main" id="main-overview">
             {files.map(f => {
 
                 const options = {

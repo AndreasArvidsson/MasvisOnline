@@ -10,22 +10,20 @@ body,
 }
 
 #mainCell {
+    display: inline-block;
     height: 100%;
     width: calc(100% - 500px);
     vertical-align: top;
-    padding: 10px 0 0 10px;
-    margin: 0;
-    overflow: auto;
-    float: left;
-}
-
-#mainDiv {
-    height: 100%;
-    width: 100%;
-    max-width: 900px;
     padding: 0;
     margin: 0;
-    vertical-align: top;
+    overflow: auto;
+}
+
+.main {
+    padding: 0;
+    margin: 0;
+    padding-left: 10px;
+    padding-bottom: 10px;
 }
 
 .graph-row {

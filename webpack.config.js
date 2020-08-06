@@ -21,7 +21,7 @@ module.exports = (env, argv) => {
                     test: /\.worker.js$/,
                     loader: "worker-loader",
                     options: {
-                        name: "[name].[ext]"
+                        filename: "[name].js"
                     }
                 },
                 {

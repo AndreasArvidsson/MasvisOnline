@@ -1,3 +1,4 @@
+
 import React from "react";
 import PropTypes from "prop-types";
 import Glyph from "owp.glyphicons";
@@ -5,7 +6,7 @@ import "./Sidebar.css";
 
 const inputRef = React.createRef();
 
-const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, removeAllFiles, analyzeAll }) => {
+const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, removeAllFiles, analyzeAll, saveImage }) => {
     const onChange = (e) => {
         const files = e.target.files;
         if (files) {
@@ -53,6 +54,9 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
                 <div>
                     Analyze all <Glyph type="search" onClick={analyzeAll} />
                 </div>
+                <div>
+                    Save image <Glyph type="download" onClick={saveImage} />
+                </div>
             </div>
 
         </div>
@@ -66,7 +70,8 @@ Sidebar.propTypes = {
     addFiles: PropTypes.func.isRequired,
     removeFile: PropTypes.func.isRequired,
     removeAllFiles: PropTypes.func.isRequired,
-    analyzeAll: PropTypes.func.isRequired
+    analyzeAll: PropTypes.func.isRequired,
+    saveImage: PropTypes.func.isRequired
 };
 
 export default Sidebar;
