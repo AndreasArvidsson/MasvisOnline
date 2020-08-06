@@ -5,8 +5,6 @@ import Static from "./Static";
 import DSP from "./DSP";
 import "./Detailes.css";
 
-const yWidth = 40;
-
 const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
     useEffect(() => {
@@ -28,7 +26,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
         const options = {
             interaction: {
-                trackMouse: false,
+                trackMouse: false
             },
             title: Static.getTitle(title),
             border: Static.getBorder(),
@@ -155,7 +153,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
         const options = {
             interaction: {
-                trackMouse: false,
+                trackMouse: false
             },
             title: Static.getTitle(title),
             border: Static.getBorder(),
@@ -168,14 +166,14 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
+                    log: true,
                     tickerValuePreFormatter: tickerXValuePreFormatter,
                     tickerValuePostFormatter: tickerXValuePostFormatter,
                     tickerLabelFormatter: tickerXLabelFormatter,
                     bounds: {
                         min: DSP.FFT.freqToBinIndex(20, bandwidth),
                         max: DSP.FFT.freqToBinIndex(maxFreq, bandwidth)
-                    },
-                    log: true
+                    }
                 },
                 y: {
                     width: yWidth,
@@ -220,8 +218,8 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 x: {
-                    tickerLabelFormatter: tickerLabelFormatter.bind(null, maxFreq, "Hz"),
                     log: true,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, maxFreq, "Hz"),
                     bounds: {
                         min: file.allpass.freqs[0],
                         max: maxFreq
@@ -272,7 +270,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             },
             axes: {
                 tickLabels: {
-                    width: 25,
+                    width: 25
                 },
                 x: {
                     tickerValuePreFormatter: indexToValue,
@@ -419,6 +417,8 @@ Detailes.propTypes = {
 };
 
 export default Detailes;
+
+const yWidth = 40;
 
 function getChecksumString(checksum) {
     const str = checksum.toString();
