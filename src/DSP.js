@@ -277,30 +277,30 @@ DSP.windowFunctions = windowFunctions;
 
 DSP.biquad = function (b0, b1, b2, a0, a1, a2) {
     //Normalize coeffs
-    b0 / a0;
-    b1 / a0;
-    b2 / a0;
-    a1 / a0;
-    a2 / a0;
-
-    let z1 = 0;
-    let z2 = 0;
+    this.b0 = b0 / a0;
+    this.b1 = b1 / a0;
+    this.b2 = b2 / a0;
+    this.a1 = a1 / a0;
+    this.a2 = a2 / a0;
+    this.z1 = 0;
+    this.z2 = 0;
 
     this.processBuffer = function (buffer, outBuffer) {
         if (!outBuffer) {
             outBuffer = buffer;
         }
         for (let i = 0; i < buffer.length; ++i) {
-            const out = buffer[i] * b0 + z1;
-            z1 = buffer[i] * b1 - out * a1 + z2;
-            z2 = buffer[i] * b2 - out * a2;
+            const out = buffer[i] * this.b0 + this.z1;
+            this.z1 = buffer[i] * this.b1 - out * this.a1 + this.z2;
+            this.z2 = buffer[i] * this.b2 - out * this.a2;
             outBuffer[i] = out;
         }
     }
+
     this.processSample = function (sample) {
-        const out = sample * b0 + z1;
-        z1 = sample * b1 - out * a1 + z2;
-        z2 = sample * b2 - out * a2;
+        const out = sample * this.b0 + this.z1;
+        this.z1 = sample * this.b1 - out * this.a1 + this.z2;
+        this.z2 = sample * this.b2 - out * this.a2;
         return out;
     }
 }

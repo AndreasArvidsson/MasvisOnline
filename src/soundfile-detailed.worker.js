@@ -29,12 +29,15 @@ function calculateLoudestPart(data, result) {
     if (showTimer) {
         console.time("calculateLoudestPart");
     }
+    const min = Math.min;
+    const abs = Math.abs;
     //Loudest part treshold.
     const threshold = data.peak * 0.95;
     //Number of samples for a 20ms window.
     const windowSize = data.sampleRate * 0.02;
     let maxCount = 0;
     let loudestChannel, maxIndex;
+
     //Calculate loudest part per channel.
     for (let i = 0; i < result.channels.length; ++i) {
         const graph = result.channels[i].graph;
@@ -43,22 +46,26 @@ function calculateLoudestPart(data, result) {
         let start = 0;
         let end = -1;
         let count = 0;
+
         //Initialize window.
-        let size = Math.min(windowSize, graph.length) - 1;
+        let size = min(windowSize, graph.length) - 1;
         while (end < size) {
-            if (Math.abs(graph[++end]) > threshold) {
+            if (abs(graph[++end]) > threshold) {
                 ++count;
             }
         }
+
+        //Move window to end.
         maxIndexC = start;
         maxCountC = count;
-        //Move window to end.
         size = graph.length - 1;
         while (end < size) {
-            if (Math.abs(graph[start++]) > threshold) {
+            //Oldest sample(now to be removed) was above threshold. Decrease count.
+            if (abs(graph[start++]) > threshold) {
                 --count;
             }
-            if (Math.abs(graph[++end]) > threshold) {
+            //New sample is above threshold. Increase count.
+            if (abs(graph[++end]) > threshold) {
                 ++count;
             }
             //Update max count for channel.
@@ -67,6 +74,7 @@ function calculateLoudestPart(data, result) {
                 maxIndexC = start;
             }
         }
+
         //Update max for track.
         if (maxCountC > maxCount) {
             maxCount = maxCountC;
@@ -74,11 +82,13 @@ function calculateLoudestPart(data, result) {
             loudestChannel = i;
         }
     }
+
     //Store loudest part in channel.
     result.channels[loudestChannel].loudestPart = {
         count: maxCount,
         index: maxIndex + windowSize / 2
     };
+
     if (showTimer) {
         console.timeEnd("calculateLoudestPart");
     }
@@ -88,26 +98,28 @@ function calculateAvgSpectrum(data, result) {
     if (showTimer) {
         console.time("calculateAvgSpectrum");
     }
-    //Number of frames/seconds that are summed together.
+    const sqrt = Math.sqrt;
+    const min = Math.min;
+    const toDb = Static.toDb;
     const bufferSize = DSP.FFT.calculatePow2Size(data.sampleRate);
-    const outSize = bufferSize / 2;
-
     const blackman = DSP.windowFunctions.Blackman(data.sampleRate).getData();
     const fft = new DSP.FFT(bufferSize, data.sampleRate);
     const second = new Float32Array(bufferSize);
+    //Number of frames/seconds that are summed together.
+    const outSize = bufferSize / 2;
 
     result.channels.forEach(channel => {
         const graph = channel.graph;
+        const rms = channel.rms;
         const res = new Float32Array(outSize);
 
         //Loop over each second and sum FFT components together.
         const length = graph.length;
         for (let i = 0; i < length;) {
-            const max = Math.min(i + data.sampleRate, length);
-
             //1sec blackman window.
+            const maxIndex = min(i + data.sampleRate, length);
             let s = 0;
-            for (; i < max; ++i, ++s) {
+            for (; i < maxIndex; ++i, ++s) {
                 second[s] = graph[i] * blackman[s];
             }
             //Fill rest of window with zeros.
@@ -126,15 +138,15 @@ function calculateAvgSpectrum(data, result) {
             }
         }
 
-        const rms = channel.rms;
+        //Convert square sum to normalized dB spectrum.
         const div = data.sampleRate * length;
         for (let i = 0; i < outSize; ++i) {
-            //Convert square sum to normalized dB spectrum.
-            res[i] = Static.toDb(Math.sqrt(res[i] / div) / rms);
+            res[i] = toDb(sqrt(res[i] / div) / rms);
         }
 
         channel.avgSpectrum = res;
     });
+
     if (showTimer) {
         console.timeEnd("calculateAvgSpectrum");
     }
@@ -144,34 +156,32 @@ function calculateAllpass(data, result) {
     if (showTimer) {
         console.time("calculateAllpass");
     }
+    const max = Math.max;
+    const sqrt = Math.sqrt;
+    const abs = Math.abs;
+    const pow = Math.pow;
     const freqs = [20, 60, 200, 600, 2000, 6000, 20000];
 
     result.channels.forEach(channel => {
-        channel.allpass = [];
+        const graph = channel.graph;
+        const res = [];
+
         freqs.forEach(fc => {
-            const graph = channel.graph;
             const allpassFilter = new DSP.allpass(fc, data.sampleRate);
             let sqrSum = 0;
-            let peakMax = 0;
-            let peakMin = 0;
+            let peak = 0;
 
             for (let i = 0; i < graph.length; ++i) {
                 const value = allpassFilter.processSample(graph[i]);
-                sqrSum += value * value;
-
-                //Optimized version of: peak = Math.max(peak, Math.abs(value))
-                if (value > peakMax) {
-                    peakMax = value;
-                }
-                else if (value < peakMin) {
-                    peakMin = value;
-                }
+                sqrSum += pow(value, 2);
+                peak = max(peak, abs(value));
             }
 
-            const peak = Math.max(peakMax, Math.abs(peakMin));
-            const rms = Math.sqrt(sqrSum / data.numSamples)
-            channel.allpass.push(peak / rms);
+            const rms = sqrt(sqrSum / data.numSamples)
+            res.push(peak / rms);
         });
+
+        channel.allpass = res;
     });
 
     result.allpass = { freqs };
@@ -185,33 +195,41 @@ function calculateHistogram(data) {
     if (showTimer) {
         console.time("calculateHistogram");
     }
-    const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
+    const pow = Math.pow;
+    const round = Math.round;
+    const max = Math.max;
+    const log2 = Math.log2;
+    const maxValue = pow(2, data.bitDepth - 1) - 1;
+
     data.channels.forEach(channel => {
-        const res = new Float32Array(Math.pow(2, data.bitDepth));
+        const res = new Float32Array(pow(2, data.bitDepth));
         const graph = channel.graph;
+
         for (let i = 0; i < graph.length; ++i) {
             ++res[
-                Math.round((graph[i] + 1) * maxValue)
+                round((graph[i] + 1) * maxValue)
             ];
         }
 
         const used = {};
         let peak = 0;
         let count = 0;
+
         for (let i = 0; i < res.length; ++i) {
             if (res[i] && !used[i]) {
                 used[i] = true;
                 ++count;
-                peak = Math.max(peak, res[i]);
+                peak = max(peak, res[i]);
             }
         }
 
         channel.histogram = {
             graph: res,
-            bits: Math.log2(count),
+            bits: log2(count),
             peak
         };
     });
+
     if (showTimer) {
         console.timeEnd("calculateHistogram");
     }
@@ -221,58 +239,52 @@ function calculatePeakVsRms(data, result) {
     if (showTimer) {
         console.time("calculatePeakVsRms");
     }
+    const min = Math.min;
+    const ceil = Math.ceil;
+    const max = Math.max;
+    const abs = Math.abs;
+    const sqrt = Math.sqrt;
+    const pow = Math.pow;
+    const toDb = Static.toDb;
     let checksum = 0;
     const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
     const maxValueNeg = -Math.pow(2, data.bitDepth - 1);
+
     result.channels.forEach(channel => {
         const graph = channel.graph;
-        const numFrames = Math.ceil(data.numSamples / data.sampleRate);
+        const numFrames = ceil(data.numSamples / data.sampleRate);
         const rmsRes = new Float32Array(numFrames);
         const peakRes = new Float32Array(numFrames);
         const crestRes = new Float32Array(numFrames);
+        const length = graph.length;
+        let s = 0;
 
         //Loop over each second and calculate rms and peak.
-        const length = graph.length;
-
-        let s = 0;
         for (let i = 0; i < length; ++s) {
-            const numSamples = Math.min(data.sampleRate, length - i);
-            const max = i + numSamples;
-
+            const numSamples = min(data.sampleRate, length - i);
+            const maxIndex = i + numSamples;
             let sqrSum = 0;
-            let peakMax = 0;
-            let peakMin = 0;
+            let peak = 0;
 
             //1sec window
-            for (; i < max; ++i) {
+            for (; i < maxIndex; ++i) {
                 const value = graph[i];
-                sqrSum += value * value;
-
-                if (value < 0) {
-                    checksum += Math.ceil(value * maxValueNeg) ** 2;
-                    if (value < peakMin) {
-                        peakMin = value;
-                    }
-                }
-                else {
-                    checksum += Math.ceil(value * maxValue) ** 2;
-                    if (value > peakMax) {
-                        peakMax = value;
-                    }
-                }
+                sqrSum += pow(value, 2);
+                peak = max(peak, abs(value));
+                checksum += pow(ceil(value * (value < 0 ? maxValueNeg : maxValue)), 2);
             }
 
-            //Optimized version of: peak = Math.max(peak, Math.abs(value))
-            const peak = Math.max(peakMax, Math.abs(peakMin));
-            const rms = Math.sqrt(sqrSum / numSamples);
-            rmsRes[s] = Static.toDb(rms);
-            peakRes[s] = Static.toDb(peak);
-            crestRes[s] = Static.toDb(peak / rms);
+            const rms = sqrt(sqrSum / numSamples);
+            rmsRes[s] = toDb(rms);
+            peakRes[s] = toDb(peak);
+            crestRes[s] = toDb(peak / rms);
         }
 
         channel.peakVsRms = { peak: peakRes, rms: rmsRes, crest: crestRes };
     });
+
     result.checksum = checksum;
+
     if (showTimer) {
         console.timeEnd("calculatePeakVsRms");
     }
