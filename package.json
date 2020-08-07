@@ -2,7 +2,7 @@
     "name": "masvis-online",
     "scripts": {
         "start": "webpack-dev-server --mode development --config webpack.config.js --port 9090 --open",
-        "build": "webpack --mode production --config webpack.config.js"
+        "build": "rm docs/* && webpack --mode production --config webpack.config.js"
     },
     "dependencies": {
         "@babel/core": "latest",

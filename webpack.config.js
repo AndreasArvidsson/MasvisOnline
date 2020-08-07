@@ -8,8 +8,14 @@ module.exports = (env, argv) => {
     console.log(" ", argv.mode);
     console.log("----------------------------\n")
 
+    const isProd = argv.mode === "production";
+    const filename = isProd ? "[contenthash]" : "[name]"
+
     const res = {
         entry: "./src/index.js",
+        output: {
+            filename: filename + ".js"
+        },
         resolve: {
             modules: [
                 path.resolve(__dirname, "node_modules")
@@ -21,7 +27,7 @@ module.exports = (env, argv) => {
                     test: /\.worker.js$/,
                     loader: "worker-loader",
                     options: {
-                        filename: "[name].js"
+                        filename: filename + ".js"
                     }
                 },
                 {
@@ -61,7 +67,7 @@ module.exports = (env, argv) => {
                     test: /\.(eot|woff|woff2|ttf|svg|ico)$/,
                     loader: "file-loader",
                     options: {
-                        name: "[name].[ext]"
+                        name: filename + ".[ext]"
                     }
                 }
             ]
@@ -73,15 +79,13 @@ module.exports = (env, argv) => {
             }),
             //Extract css styles as external file.
             new MiniCssExtractPlugin({
-                filename: "styles.css"
+                filename: filename + ".css"
             })
         ]
     };
 
     if (argv.mode === "production") {
-        res.output = {
-            path: path.resolve(__dirname, "docs")
-        };
+        res.output.path = path.resolve(__dirname, "docs");
     }
 
     return res;
