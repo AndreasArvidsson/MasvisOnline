@@ -11,9 +11,10 @@ module.exports = (env, argv) => {
     const isProd = argv.mode === "production";
     const filename = isProd ? "[contenthash]" : "[name]"
 
-    const res = {
+    return {
         entry: "./src/index.js",
         output: {
+            path: path.resolve(__dirname, "docs"),
             filename: filename + ".js"
         },
         resolve: {
@@ -83,10 +84,4 @@ module.exports = (env, argv) => {
             })
         ]
     };
-
-    if (argv.mode === "production") {
-        res.output.path = path.resolve(__dirname, "docs");
-    }
-
-    return res;
 };
