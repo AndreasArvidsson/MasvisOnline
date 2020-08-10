@@ -240,7 +240,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     };
 
     const renderHistogram = () => {
-        const maxValueX = Math.pow(2, file.bitDepth - 1) - 1;
+        const maxValueX = Math.pow(2, 15) - 1;
         const maxValueY = 50000;
 
         function valueToIndex(value) {

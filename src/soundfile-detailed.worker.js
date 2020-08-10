@@ -197,36 +197,31 @@ function calculateHistogram(data) {
     }
     const pow = Math.pow;
     const round = Math.round;
-    const max = Math.max;
     const log2 = Math.log2;
     const maxValue = pow(2, data.bitDepth - 1) - 1;
+    //Normalize all bit depth to 16bits.
+    const maxValueIndex = pow(2, 15) - 1;
+    //Normalize all sampling frequencies to 44100Hz.
+    const sampleRateMult = 44100 / data.sampleRate;
 
     data.channels.forEach(channel => {
-        const res = new Float32Array(pow(2, data.bitDepth));
         const graph = channel.graph;
-
-        for (let i = 0; i < graph.length; ++i) {
-            ++res[
-                round((graph[i] + 1) * maxValue)
-            ];
-        }
-
+        const res = new Float32Array(pow(2, 16));
         const used = {};
-        let peak = 0;
         let count = 0;
 
-        for (let i = 0; i < res.length; ++i) {
-            if (res[i] && !used[i]) {
-                used[i] = true;
+        for (let i = 0; i < graph.length; ++i) {
+            const v = round((graph[i] + 1) * maxValue);
+            if (!used[v]) {
+                used[v] = true;
                 ++count;
-                peak = max(peak, res[i]);
             }
+            res[round((graph[i] + 1) * maxValueIndex)] += sampleRateMult;
         }
 
         channel.histogram = {
             graph: res,
-            bits: log2(count),
-            peak
+            bits: log2(count)
         };
     });
 
