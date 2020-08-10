@@ -240,17 +240,18 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     };
 
     const renderHistogram = () => {
-        const maxValue = Math.pow(2, file.bitDepth - 1) - 1;
+        const maxValueX = Math.pow(2, file.bitDepth - 1) - 1;
+        const maxValueY = 50000;
 
         function valueToIndex(value) {
-            return Math.round((value + 1) * maxValue);
+            return Math.round((value + 1) * maxValueX);
         }
 
         function indexToValue(index) {
-            return index / maxValue - 1;
+            return index / maxValueX - 1;
         }
 
-        function tickerLabelFormatter(value, defaultFormatter) {
+        function tickerXLabelFormatter(value, defaultFormatter) {
             return defaultFormatter(indexToValue(value));
         }
 
@@ -275,7 +276,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 x: {
                     tickerValuePreFormatter: indexToValue,
                     tickerValuePostFormatter: valueToIndex,
-                    tickerLabelFormatter,
+                    tickerLabelFormatter: tickerXLabelFormatter,
                     bounds: {
                         min: valueToIndex(-1.1),
                         max: valueToIndex(1.1)
@@ -284,9 +285,10 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 y: {
                     width: yWidth,
                     log: true,
+                    tickerLabelFormatter: tickerLabelFormatter.bind(null, maxValueY, "n"),
                     bounds: {
                         min: 1,
-                        max: Math.pow(2, file.bitDepth)
+                        max: 50000
                     }
                 }
             }
@@ -338,8 +340,12 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
 
     const renderShortTermCrest = () => {
         const maxX = file.channels[0].peakVsRms.crest.length;
-        const title = "Short term (1 s) crest factor        Checksum (energy): "
-            + getChecksumString(file.checksum);
+        const checksum = getChecksumString(file.checksum);
+        const paddingLength = 29 - checksum.length;
+        const padding = paddingLength > 1
+            ? new Array(paddingLength).fill(" ").join("")
+            : ". ";
+        const title = `Short term (1s) crest factor${padding}Checksum(energy) ${checksum}`;
         const options = {
             interaction: {
                 trackMouse: false
