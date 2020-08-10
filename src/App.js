@@ -100,16 +100,14 @@ const App = () => {
 
     const addFiles = (newFiles) => {
         const tmpFiles = files.slice();
-        const fileNames = files.map(f => f.file.name);
         for (let i = 0; i < newFiles.length; ++i) {
             const file = newFiles[i];
-            if (!fileNames.includes(file.name)) {
-                tmpFiles.push({
-                    file,
-                    isLoaded: false,
-                    isDetailed: false
-                });
-            }
+            tmpFiles.push({
+                file,
+                key: file.name + "_" + Date.now(),
+                isLoaded: false,
+                isDetailed: false
+            });
         }
         setFiles(tmpFiles);
     }

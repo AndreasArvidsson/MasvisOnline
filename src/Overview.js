@@ -51,7 +51,7 @@ const Overview = ({ files }) => {
                 }
 
                 return (
-                    <div key={f.file.name} className="graph-row">
+                    <div key={f.key} className="graph-row">
                         <Graph className="overview-graph-div" options={options} />
                         <div className="overview-graph-data-table">
                             <table>

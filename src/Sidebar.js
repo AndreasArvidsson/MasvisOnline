@@ -34,7 +34,7 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
                 <table className="table table-no-wrap table-hover table-striped">
                     <tbody>
                         {files.map(f =>
-                            <tr key={f.file.name} className={selectedFile === f ? "selected" : null}>
+                            <tr key={f.key} className={selectedFile === f ? "selected" : null}>
                                 <td onClick={() => selectFile(f)} title={f.file.name}>
                                     <Glyph type={f.isDetailed ? "stats" : "none"} /> {f.file.name}
                                 </td>
