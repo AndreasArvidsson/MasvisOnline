@@ -202,7 +202,7 @@ function calculateHistogram(data) {
     //Normalize all bit depth to 16bits.
     const maxValueIndex = pow(2, 15) - 1;
     //Normalize all sampling frequencies to 44100Hz.
-    const sampleRateMult = 44100 / data.sampleRate;
+    const sampleRateRatio = 44100 / data.sampleRate;
 
     data.channels.forEach(channel => {
         const graph = channel.graph;
@@ -216,7 +216,7 @@ function calculateHistogram(data) {
                 used[v] = true;
                 ++count;
             }
-            res[round((graph[i] + 1) * maxValueIndex)] += sampleRateMult;
+            res[round((graph[i] + 1) * maxValueIndex)] += sampleRateRatio;
         }
 
         channel.histogram = {
