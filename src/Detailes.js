@@ -240,7 +240,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
     };
 
     const renderHistogram = () => {
-        const maxValueX = Math.pow(2, 15) - 1;
+        const maxValueX = file.channels[0].histogram.graph.length / 2 - 1;
         const maxValueY = 50000;
 
         function valueToIndex(value) {

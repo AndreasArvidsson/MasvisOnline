@@ -200,13 +200,14 @@ function calculateHistogram(data) {
     const log2 = Math.log2;
     const maxValue = pow(2, data.bitDepth - 1) - 1;
     //Normalize all bit depth to 16bits.
-    const maxValueIndex = pow(2, 15) - 1;
+    const numValues = pow(2, 16);
+    const maxValueIndex = numValues / 2 - 1;
     //Normalize all sampling frequencies to 44100Hz.
     const sampleRateRatio = 44100 / data.sampleRate;
 
     data.channels.forEach(channel => {
         const graph = channel.graph;
-        const res = new Float32Array(pow(2, 16));
+        const res = new Float32Array(numValues);
         const used = {};
         let count = 0;
 
