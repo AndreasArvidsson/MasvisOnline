@@ -18,8 +18,9 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
             <input
                 type="file"
                 ref={inputRef}
-                accept="audio/*"
-                onChange={onChange} multiple
+                accept=".flac,.mp3,.wav,audio/*"
+                onChange={onChange}
+                multiple
             />
 
             <div onClick={() => inputRef.current.click()}>
