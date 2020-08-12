@@ -221,7 +221,7 @@ function calculateHistogram(data) {
         }
 
         channel.histogram = {
-            graph: res,
+            graph: histogramSmoothing(res),
             bits: log2(count)
         };
     });
@@ -229,6 +229,22 @@ function calculateHistogram(data) {
     if (showTimer) {
         console.timeEnd("calculateHistogram");
     }
+}
+
+function histogramSmoothing(graph) {
+    const max = Math.max;
+    const windowSize = Math.pow(2, 7);
+    const numValues = graph.length / windowSize;
+    const res = new Float32Array(numValues);
+    for (let s = 0, i = 0; i < graph.length; ++s) {
+        const end = i + windowSize;
+        const value = 0;
+        for (; i < end; ++i) {
+            value = max(value, graph[i]);
+        }
+        res[s] = value;
+    }
+    return res;
 }
 
 function calculatePeakVsRms(data, result) {
@@ -253,10 +269,9 @@ function calculatePeakVsRms(data, result) {
         const peakRes = new Float32Array(numFrames);
         const crestRes = new Float32Array(numFrames);
         const length = graph.length;
-        let s = 0;
 
         //Loop over each second and calculate rms and peak.
-        for (let i = 0; i < length; ++s) {
+        for (let s = 0, i = 0; i < length; ++s) {
             const numSamples = min(data.sampleRate, length - i);
             const maxIndex = i + numSamples;
             let sqrSum = 0;
