@@ -3,7 +3,7 @@
     "scripts": {
         "start": "webpack-dev-server --mode development --config webpack.config.js --port 9090 --open",
         "startProd": "webpack-dev-server --mode production --config webpack.config.js --port 9091 --open",
-        "build": "rm docs/* && webpack --mode production --config webpack.config.js"
+        "build": "rm docs/* & webpack --mode production --config webpack.config.js"
     },
     "dependencies": {
         "@babel/core": "latest",

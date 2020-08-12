@@ -238,7 +238,7 @@ function histogramSmoothing(graph) {
     const res = new Float32Array(numValues);
     for (let s = 0, i = 0; i < graph.length; ++s) {
         const end = i + windowSize;
-        const value = 0;
+        let value = 0;
         for (; i < end; ++i) {
             value = max(value, graph[i]);
         }

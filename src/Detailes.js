@@ -288,7 +288,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                     tickerLabelFormatter: tickerLabelFormatter.bind(null, maxValueY, "n"),
                     bounds: {
                         min: 1,
-                        max: 50000
+                        max: maxValueY
                     }
                 }
             }
