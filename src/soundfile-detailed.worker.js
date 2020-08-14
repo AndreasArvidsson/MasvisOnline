@@ -221,7 +221,7 @@ function calculateHistogram(data) {
         }
 
         channel.histogram = {
-            graph: histogramSmoothing(res),
+            graph: res,
             bits: log2(count)
         };
     });
@@ -229,22 +229,6 @@ function calculateHistogram(data) {
     if (showTimer) {
         console.timeEnd("calculateHistogram");
     }
-}
-
-function histogramSmoothing(graph) {
-    const max = Math.max;
-    const windowSize = Math.pow(2, 7);
-    const numValues = graph.length / windowSize;
-    const res = new Float32Array(numValues);
-    for (let s = 0, i = 0; i < graph.length; ++s) {
-        const end = i + windowSize;
-        let value = 0;
-        for (; i < end; ++i) {
-            value = max(value, graph[i]);
-        }
-        res[s] = value;
-    }
-    return res;
 }
 
 function calculatePeakVsRms(data, result) {

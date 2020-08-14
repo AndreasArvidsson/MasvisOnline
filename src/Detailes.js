@@ -158,6 +158,8 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             title: Static.getTitle(title),
             border: Static.getBorder(),
             graph: {
+                simplify: 1,
+                simplifyBy: "avg",
                 dataY: file.channels.map(c => c.avgSpectrum),
                 colors: [
                     Static.getColor(0),
@@ -263,6 +265,8 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             title: Static.getTitle(`Histogram, "bits": ${bits.join("/")}`),
             border: Static.getBorder(),
             graph: {
+                simplify: 1,
+                simplifyBy: "max",
                 dataY: file.channels.map(c => c.histogram.graph),
                 colors: [
                     Static.getColor(0),
