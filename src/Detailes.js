@@ -159,7 +159,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
             border: Static.getBorder(),
             graph: {
                 simplify: 1,
-                simplifyBy: "avg",
+                simplifyBy: "max",
                 dataY: file.channels.map(c => c.avgSpectrum),
                 colors: [
                     Static.getColor(0),
