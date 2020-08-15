@@ -1,5 +1,5 @@
 node_modules
-sample
+samples
 *.txt
 package-lock.json
 stuff
