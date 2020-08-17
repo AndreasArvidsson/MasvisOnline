@@ -53,41 +53,32 @@ function parseBuffer(res, buffer, file) {
     if (showTimer) {
         Timer.start(file.name + " [1.2] Parse buffer");
     }
-
+    const max = Math.max;
+    const abs = Math.abs;
     const numChannels = res.numChannels;
-    res.numSamples = buffer.length / numChannels;
-
     //Divide sampledata into channels and calculate channel stats.
     const channels = [];
     let sqrSum = 0;
     let peak = 0;
+    res.numSamples = buffer.length / numChannels;
 
     for (let c = 0; c < numChannels; ++c) {
-        //The sum of all squared values for each channel.
-        let sqrSumC = 0;
         //Graph data for each channel.
         const graphData = new Float32Array(res.numSamples);
-        let peakMax = 0;
-        let peakMin = 0;
-        let i = -1;
+        //The sum of all squared values for each channel.
+        let sqrSumC = 0;
+        //Peak level for each channel.
+        let peakC = 0;
 
         //Iterate each sample for this channel
-        for (let s = c; s < buffer.length; s += numChannels) {
+        for (let s = c, i = -1; s < buffer.length; s += numChannels) {
             const value = buffer[s];
             graphData[++i] = value;
             sqrSumC += value * value;
-
-            //Optimized version of: peakC = Math.max(peakC, Math.abs(value))
-            if (value > peakMax) {
-                peakMax = value;
-            }
-            else if (value < peakMin) {
-                peakMin = value;
-            }
+            peakC = max(peakC, abs(value));
         }
 
         //Calculate channels stats.
-        const peakC = Math.max(peakMax, Math.abs(peakMin));
         const rms = Math.sqrt(sqrSumC / res.numSamples);
         channels[c] = {
             peak: peakC,
