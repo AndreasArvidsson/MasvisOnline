@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import Static from "./Static";
 import DSP from "./DSP";
+import VersionTag from"./VersionTag";
 import "./Detailes.css";
 
 const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
@@ -415,6 +416,7 @@ const Detailes = ({ file, isLoaded, isDetailed, calculateDetailes }) => {
                 {file.file.name}
             </h2>
             {renderGraphs()}
+            <VersionTag />
         </div>
     );
 };

@@ -7,11 +7,11 @@ import Overview from "./Overview";
 import Detailes from "./Detailes";
 import loadWorker from "./soundfile-load.worker";
 import detailedWorker from "./soundfile-detailed.worker";
+import Timer from "./Timer";
 
 let nextState = 1;
 function useForceUpdate() {
-    /* eslint-disable-next-line no-unused-vars */
-    const [value, setValue] = useState(0);
+    const [, setValue] = useState(0);
     return () => setValue(nextState++);
 }
 
@@ -48,12 +48,10 @@ const App = () => {
             return;
         }
         file.isLoading = true;
-
-        console.time(file.file.name + " - loadFile and data");
-
+        Timer.start(file.file.name + " [1.x] Calculate overview");
         workers.add(loadWorker, { file: file.file })
             .then(result => {
-                console.timeEnd(file.file.name + " - loadFile and data");
+                Timer.stop(file.file.name + " [1.x] Calculate overview");
                 Object.assign(file, result);
                 file.isLoaded = true;
                 delete file.isLoading;
@@ -69,15 +67,14 @@ const App = () => {
             return;
         }
         file.isCalculating = true;
-
-        console.time(file.file.name + " - calculateDetailes");
-
+        Timer.start(file.file.name + " [2.x] Calculate detailes");
         const args = {
             channels: [],
             peak: file.peak,
             sampleRate: file.sampleRate,
             numSamples: file.numSamples,
-            bitDepth: file.bitDepth
+            bitDepth: file.bitDepth,
+            filename: file.file.name
         };
         //Transfer channels to new thread. Increased performance instead of copy.
         const transfer = [];
@@ -87,7 +84,7 @@ const App = () => {
         }
         workers.add(detailedWorker, args, transfer)
             .then(result => {
-                console.timeEnd(file.file.name + " - calculateDetailes");
+                Timer.stop(file.file.name + " [2.x] Calculate detailes");
                 Object.assign(file, result);
                 file.isDetailed = true;
                 delete file.isCalculating;

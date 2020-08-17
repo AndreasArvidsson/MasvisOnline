@@ -4,9 +4,9 @@ const path = require("path");
 
 module.exports = (env, argv) => {
 
-    console.log("----------------------------")
-    console.log(" ", argv.mode);
-    console.log("----------------------------\n")
+    console.debug("----------------------------")
+    console.debug(" ", argv.mode);
+    console.debug("----------------------------\n")
 
     const isProd = argv.mode === "production";
     const filename = isProd ? "[contenthash]" : "[name]"

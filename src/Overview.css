@@ -6,7 +6,7 @@
 
 .overview-graph-div {
     display: inline-block;
-    width: 665px;
+    width: 645px;
     height: 77px; 
 }
 
@@ -14,7 +14,7 @@
     display: inline-block;
     width: 120px;
     height: 77px; 
-    margin-left: -15px;
+    margin-left: 2px;
     position: relative;
 }
 

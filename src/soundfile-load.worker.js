@@ -1,4 +1,5 @@
 import AV from "./AV";
+import Timer from "./Timer";
 
 const showTimer = true;
 
@@ -6,7 +7,7 @@ onmessage = (e) => {
     const file = e.data.file;
 
     if (showTimer) {
-        console.time(file.name + " - decodeToBuffer");
+        Timer.start(file.name + " [1.1] Decode file to buffer");
     }
 
     const asset = AV.Asset.fromFile(file);
@@ -17,7 +18,7 @@ onmessage = (e) => {
     const checkIfLoaded = () => {
         if (progress === 3) {
             if (showTimer) {
-                console.timeEnd(file.name + " - decodeToBuffer");
+                Timer.stop(file.name + " [1.1] Decode file to buffer");
             }
             parseBuffer(result, buffer, file);
             //Add arrays buffers to the transfer list. Decreases message time.
@@ -50,7 +51,7 @@ onmessage = (e) => {
 
 function parseBuffer(res, buffer, file) {
     if (showTimer) {
-        console.time(file.name + " - parseBuffer");
+        Timer.start(file.name + " [1.2] Parse buffer");
     }
 
     const numChannels = res.numChannels;
@@ -106,6 +107,6 @@ function parseBuffer(res, buffer, file) {
     res.crest = res.peak / res.rms;
 
     if (showTimer) {
-        console.timeEnd(file.name + " - parseBuffer");
+        Timer.stop(file.name + " [1.2] Parse buffer");
     }
 }

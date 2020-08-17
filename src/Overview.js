@@ -2,6 +2,7 @@ import Graph from "owp.graph-react";
 import React from "react";
 import PropTypes from "prop-types";
 import Static from "./Static";
+import VersionTag from "./VersionTag";
 import "./Overview.css";
 
 const Overview = ({ files }) => {
@@ -10,6 +11,7 @@ const Overview = ({ files }) => {
             {files.map(f => {
 
                 const options = {
+                    offset: 0,
                     interaction: {
                         trackMouse: false,
                         zoom: false
@@ -66,6 +68,7 @@ const Overview = ({ files }) => {
                     </div>
                 );
             })}
+            <VersionTag />
         </div>
     );
 };

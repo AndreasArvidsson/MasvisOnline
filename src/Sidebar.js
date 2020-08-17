@@ -23,24 +23,55 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
                 multiple
             />
 
-            <div onClick={() => inputRef.current.click()}>
-                Add files <Glyph type="plus" />
+            <div>
+                <span
+                    className="clickable"
+                    onClick={() => inputRef.current.click()}
+                    title={"Add new file.\nFiles can also be dropped anywhere on this page."}
+                >
+                    Add files <Glyph type="plus" />
+                </span>
+                <span style={{ float: "right" }}>
+                    <a
+                        className="clickable"
+                        href="https://github.com/AndreasArvidsson/MasvisOnline"
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Click to visit GitHub page for documentation"
+                    >
+                        Help <Glyph type="info-sign" />
+                    </a>
+                </span>
             </div>
 
-            <div onClick={() => selectFile(null)} className={!selectedFile ? "selected" : null}>
+            <div
+                className={"clickable" + (!selectedFile ? " selected" : "")}
+                onClick={() => selectFile(null)}
+                title="View overview of all files"
+            >
                 Overview <Glyph type="eye-open" />
             </div>
 
             <div className="sidebar-table-wrapper">
-                <table className="table table-no-wrap table-hover table-striped">
+                <table className="table table-no-wrap table-striped">
                     <tbody>
                         {files.map(f =>
-                            <tr key={f.key} className={selectedFile === f ? "selected" : null}>
-                                <td onClick={() => selectFile(f)} title={f.file.name}>
+                            <tr
+                                key={f.key}
+                                className={selectedFile === f ? "selected" : null}
+                            >
+                                <td
+                                    className="clickable"
+                                    onClick={() => selectFile(f)}
+                                    title={"View detailes for: " + f.file.name}
+                                >
                                     <Glyph type={f.isDetailed ? "stats" : "none"} /> {f.file.name}
                                 </td>
-                                <td className="table-col-icon">
-                                    <Glyph type="trash" onClick={() => removeFile(f)} />
+                                <td
+                                    className="table-col-icon clickable"
+                                    title={"Remove: " + f.file.name}
+                                >
+                                    <Glyph type="trash danger" onClick={() => removeFile(f)} />
                                 </td>
                             </tr>
                         )}
@@ -50,13 +81,31 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
 
             <div className="sidebar-bottom">
                 <div>
-                    Clear <Glyph type="trash" onClick={removeAllFiles} />
+                    <span
+                        className="clickable"
+                        onClick={removeAllFiles}
+                        title="Clear list and remove all files"
+                    >
+                        Clear <Glyph type="trash" />
+                    </span>
                 </div>
                 <div>
-                    Analyze all <Glyph type="search" onClick={analyzeAll} />
+                    <span
+                        className="clickable"
+                        onClick={analyzeAll}
+                        title="Analyse all tracks and calculate details"
+                    >
+                        Analyze all <Glyph type="search" />
+                    </span>
                 </div>
                 <div>
-                    Save image <Glyph type="download" onClick={saveImage} />
+                    <span
+                        className="clickable"
+                        onClick={saveImage}
+                        title={"Download image of: " + (selectedFile ? selectedFile.file.name : "Overview")}
+                    >
+                        Save image <Glyph type="download" />
+                    </span>
                 </div>
             </div>
 

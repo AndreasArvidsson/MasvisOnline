@@ -1,5 +1,6 @@
 import Static from "./Static";
 import DSP from "./DSP";
+import Timer from "./Timer";
 
 const showTimer = true;
 
@@ -27,7 +28,7 @@ onmessage = (e) => {
 
 function calculateLoudestPart(data, result) {
     if (showTimer) {
-        console.time("calculateLoudestPart");
+        Timer.start(data.filename + " [2.1] Calculate loudest part");
     }
     const min = Math.min;
     const abs = Math.abs;
@@ -90,13 +91,13 @@ function calculateLoudestPart(data, result) {
     };
 
     if (showTimer) {
-        console.timeEnd("calculateLoudestPart");
+        Timer.stop(data.filename + " [2.1] Calculate loudest part");
     }
 }
 
 function calculateAvgSpectrum(data, result) {
     if (showTimer) {
-        console.time("calculateAvgSpectrum");
+        Timer.start(data.filename + " [2.2] Calculate avg spectrum");
     }
     const sqrt = Math.sqrt;
     const min = Math.min;
@@ -148,13 +149,13 @@ function calculateAvgSpectrum(data, result) {
     });
 
     if (showTimer) {
-        console.timeEnd("calculateAvgSpectrum");
+        Timer.stop(data.filename + " [2.2] Calculate avg spectrum");
     }
 }
 
 function calculateAllpass(data, result) {
     if (showTimer) {
-        console.time("calculateAllpass");
+        Timer.start(data.filename + " [2.3] Calculate allpass");
     }
     const max = Math.max;
     const sqrt = Math.sqrt;
@@ -187,13 +188,13 @@ function calculateAllpass(data, result) {
     result.allpass = { freqs };
 
     if (showTimer) {
-        console.timeEnd("calculateAllpass");
+        Timer.stop(data.filename + " [2.3] Calculate allpass");
     }
 }
 
 function calculateHistogram(data) {
     if (showTimer) {
-        console.time("calculateHistogram");
+        Timer.start(data.filename + " [2.4] Calculate histogram");
     }
     const pow = Math.pow;
     const round = Math.round;
@@ -227,13 +228,13 @@ function calculateHistogram(data) {
     });
 
     if (showTimer) {
-        console.timeEnd("calculateHistogram");
+        Timer.stop(data.filename + " [2.4] Calculate histogram");
     }
 }
 
 function calculatePeakVsRms(data, result) {
     if (showTimer) {
-        console.time("calculatePeakVsRms");
+        Timer.start(data.filename + " [2.5] Calculate peak vs RMS");
     }
     const min = Math.min;
     const ceil = Math.ceil;
@@ -281,6 +282,6 @@ function calculatePeakVsRms(data, result) {
     result.checksum = checksum;
 
     if (showTimer) {
-        console.timeEnd("calculatePeakVsRms");
+        Timer.stop(data.filename + " [2.5] Calculate peak vs RMS");
     }
 }

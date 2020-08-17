@@ -1,5 +1,6 @@
 {
     "name": "masvis-online",
+    "version": "1.1.0",
     "scripts": {
         "start": "webpack-dev-server --mode development --config webpack.config.js --port 9090 --open",
         "startProd": "webpack-dev-server --mode production --config webpack.config.js --port 9091 --open",
