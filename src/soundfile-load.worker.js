@@ -55,6 +55,8 @@ function parseBuffer(res, buffer, file) {
     }
     const max = Math.max;
     const abs = Math.abs;
+    const pow = Math.pow;
+    const sqrt = Math.sqrt;
     const numChannels = res.numChannels;
     //Divide sampledata into channels and calculate channel stats.
     const channels = [];
@@ -72,14 +74,13 @@ function parseBuffer(res, buffer, file) {
 
         //Iterate each sample for this channel
         for (let s = c, i = -1; s < buffer.length; s += numChannels) {
-            const value = buffer[s];
-            graphData[++i] = value;
-            sqrSumC += value * value;
-            peakC = max(peakC, abs(value));
+            graphData[++i] = buffer[s];
+            peakC = max(peakC, abs(buffer[s]));
+            sqrSumC += pow(buffer[s], 2);
         }
 
         //Calculate channels stats.
-        const rms = Math.sqrt(sqrSumC / res.numSamples);
+        const rms = sqrt(sqrSumC / res.numSamples);
         channels[c] = {
             peak: peakC,
             rms: rms,
@@ -89,12 +90,12 @@ function parseBuffer(res, buffer, file) {
 
         //For entire file:
         sqrSum += sqrSumC;
-        peak = Math.max(peak, peakC);
+        peak = max(peak, peakC);
     }
 
     res.channels = channels;
     res.peak = peak;
-    res.rms = Math.sqrt(sqrSum / (res.numSamples * res.numChannels));
+    res.rms = sqrt(sqrSum / (res.numSamples * res.numChannels));
     res.crest = res.peak / res.rms;
 
     if (showTimer) {

@@ -169,13 +169,13 @@ function calculateAllpass(data, result) {
 
         freqs.forEach(fc => {
             const allpassFilter = new DSP.allpass(fc, data.sampleRate);
-            let sqrSum = 0;
             let peak = 0;
+            let sqrSum = 0;
 
             for (let i = 0; i < graph.length; ++i) {
                 const value = allpassFilter.processSample(graph[i]);
-                sqrSum += pow(value, 2);
                 peak = max(peak, abs(value));
+                sqrSum += pow(value, 2);
             }
 
             const rms = sqrt(sqrSum / data.numSamples)
@@ -243,15 +243,15 @@ function calculatePeakVsRms(data, result) {
     const sqrt = Math.sqrt;
     const pow = Math.pow;
     const toDb = Static.toDb;
-    let checksum = 0;
     const maxValue = Math.pow(2, data.bitDepth - 1) - 1;
     const maxValueNeg = -Math.pow(2, data.bitDepth - 1);
+    let checksum = 0;
 
     result.channels.forEach(channel => {
         const graph = channel.graph;
         const numFrames = ceil(data.numSamples / data.sampleRate);
-        const rmsRes = new Float32Array(numFrames);
         const peakRes = new Float32Array(numFrames);
+        const rmsRes = new Float32Array(numFrames);
         const crestRes = new Float32Array(numFrames);
         const length = graph.length;
 
@@ -259,20 +259,19 @@ function calculatePeakVsRms(data, result) {
         for (let s = 0, i = 0; i < length; ++s) {
             const numSamples = min(data.sampleRate, length - i);
             const maxIndex = i + numSamples;
-            let sqrSum = 0;
             let peak = 0;
+            let sqrSum = 0;
 
             //1sec window
             for (; i < maxIndex; ++i) {
-                const value = graph[i];
-                sqrSum += pow(value, 2);
-                peak = max(peak, abs(value));
-                checksum += pow(ceil(value * (value < 0 ? maxValueNeg : maxValue)), 2);
+                peak = max(peak, abs(graph[i]));
+                sqrSum += pow(graph[i], 2);
+                checksum += pow(ceil(graph[i] * (graph[i] < 0 ? maxValueNeg : maxValue)), 2);
             }
 
             const rms = sqrt(sqrSum / numSamples);
-            rmsRes[s] = toDb(rms);
             peakRes[s] = toDb(peak);
+            rmsRes[s] = toDb(rms);
             crestRes[s] = toDb(peak / rms);
         }
 
