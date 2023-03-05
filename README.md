@@ -1,6 +1,6 @@
 # MasvisOnline
 
-Online version of [MasVis](https://www.lts.a.se/lts/masvis)  
+Online version of [MasVis](https://www.lts.a.se/ljudteknik/masvis)  
 Audio file mastering analyzer
 
 ## Try it
@@ -9,7 +9,7 @@ http://andreasarvidsson.github.io/MasvisOnline
 
 ## Understanding the graphs
 
-https://lts.a.se/lts/manual
+[UnderstandingGraphs.pdf](https://www.lts.a.se/explorer/files/MasVis/UnderstandingGraphs.pdf)
 
 ## Features
 
