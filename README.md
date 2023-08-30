@@ -3,6 +3,9 @@
 Online version of [MasVis](https://www.lts.a.se/ljudteknik/masvis)  
 Audio file mastering analyzer
 
+> **Note**
+> If you find this repository helpful, [consider sponsoring](https://github.com/sponsors/AndreasArvidsson)!
+
 ## Try it
 
 http://andreasarvidsson.github.io/MasvisOnline
