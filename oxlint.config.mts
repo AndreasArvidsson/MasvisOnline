@@ -93,7 +93,7 @@ const disabledRules = [
 
 // oxlint-disable-next-line import/no-default-export
 export default defineConfig({
-    ignorePatterns: ["/docs"],
+    ignorePatterns: ["/docs", "*.d.ts"],
     options: {
         typeAware: true,
         typeCheck: true,

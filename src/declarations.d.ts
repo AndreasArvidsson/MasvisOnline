@@ -13,12 +13,25 @@ declare module "owp.get-html-as-image" {
 }
 
 declare module "owp.glyphicons" {
-    const Glyph: any;
+    import type { ComponentType } from "react";
+
+    interface GlyphProps {
+        type: string;
+    }
+
+    const Glyph: ComponentType<GlyphProps>;
     export default Glyph;
 }
 
 declare module "owp.graph-react" {
-    const Graph: any;
+    import type { ComponentType, HTMLAttributes } from "react";
+    import type { GraphOptions } from "./GraphOptions";
+
+    interface GraphProps extends HTMLAttributes<HTMLDivElement> {
+        options: GraphOptions;
+    }
+
+    const Graph: ComponentType<GraphProps>;
     export default Graph;
 }
 

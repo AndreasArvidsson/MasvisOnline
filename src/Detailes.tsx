@@ -7,7 +7,8 @@ import {
     calculatePow2Size,
     freqToBinIndex,
 } from "./dsp/FFT";
-import type { AnalysisFile, DetailedChannel } from "./types";
+import type { GraphOptions } from "./GraphOptions";
+import type { AnalysisFile, DetailedChannel, DetailedFile } from "./types";
 import {
     getBorder,
     getColor,
@@ -26,13 +27,29 @@ interface DetailesProps {
 }
 
 export function Detailes({ file }: DetailesProps): JSX.Element {
+    return (
+        <div className="main" id="main-details">
+            <h2 className="detailes-title">{file.file.name}</h2>
+
+            {file.type === "detailed" ? (
+                <DetailedGraphs file={file} />
+            ) : (
+                <div>Loading...</div>
+            )}
+
+            <VersionTag />
+        </div>
+    );
+}
+
+function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
     const renderChannel = (channel: DetailedChannel, i: number) => {
         const crest = toDb(channel.crest, 2);
         const rms = toDb(channel.rms, 2);
         const peak = toDb(channel.peak, 2);
         const title = `${getName(i + 1)}: Crest=${crest} dB, RMS=${rms} dBFS, Peak=${peak} dBFS`;
 
-        const options = {
+        const options: GraphOptions = {
             interaction: {
                 trackMouse: false,
             },
@@ -79,16 +96,17 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
             },
         };
 
-        if (channel.loudestPart) {
-            const minOffset = Math.round(file.numSamples * 0.0004);
-            const loudestPartOffset = file.sampleRate * 0.05;
-            //Use a min offset so that the hightlight isn't to small.
-            const offset = Math.max(minOffset, loudestPartOffset);
-            const minIndex = Math.max(0, channel.loudestPart.index - offset);
-            const maxIndex = minIndex + 2 * offset;
-            options.highlight.xMin = minIndex;
-            options.highlight.xMax = maxIndex;
-        }
+        const minOffset = Math.round(file.numSamples * 0.0004);
+        const loudestPartOffset = file.sampleRate * 0.05;
+        //Use a min offset so that the hightlight isn't to small.
+        const offset = Math.max(minOffset, loudestPartOffset);
+        const minIndex = Math.max(0, channel.loudestPart.index - offset);
+        const maxIndex = minIndex + 2 * offset;
+        options.highlight = {
+            ...options.highlight,
+            xMin: minIndex,
+            xMax: maxIndex,
+        };
 
         return (
             <Graph
@@ -158,7 +176,7 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
     const renderAvgSpectrum = () => {
         const bufferSize = calculatePow2Size(file.sampleRate);
         const bandwidth = calculateBandwidth(bufferSize, file.sampleRate);
-        const maxFreq = 20000;
+        const maxFreq = 20_000;
 
         function tickerXValuePreFormatter(value: number) {
             return binIndexToFreq(value, bandwidth);
@@ -231,20 +249,23 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
 
     const renderAllpass = () => {
         const maxFreq = file.allpass.freqs[file.allpass.freqs.length - 1];
-        const dataY = [];
-        const colors = [getColor(0)];
-        const dashed = [];
-        file.channels.forEach((c, i) => {
+        const dataY: number[][] = [];
+        const colors: string[] = [getColor(0)];
+        const dashed: boolean[] = [];
+
+        for (let i = 0; i < file.channels.length; ++i) {
+            const c = file.channels[i];
             const color = getColor(i + 1);
             dataY.push(c.allpass.map(toDb));
             colors.push(color);
             dashed.push(false);
-            dataY.push(new Array(c.allpass.length).fill(toDb(c.crest)));
+            // oxlint-disable-next-line unicorn/no-new-array
+            dataY.push(new Array<number>(c.allpass.length).fill(toDb(c.crest)));
             colors.push(color);
             dashed.push(true);
-        });
+        }
 
-        const options = {
+        const options: GraphOptions = {
             interaction: {
                 trackMouse: false,
             },
@@ -289,7 +310,7 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
 
     const renderHistogram = () => {
         const maxValueX = file.channels[0].histogram.graph.length / 2 - 1;
-        const maxValueY = 50000;
+        const maxValueY = 50_000;
 
         function valueToIndex(value: number) {
             return Math.round((value + 1) * maxValueX);
@@ -407,10 +428,7 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
         const maxX = file.channels[0].peakVsRms.crest.length;
         const checksum = getChecksumString(file.checksum);
         const paddingLength = 29 - checksum.length;
-        const padding =
-            paddingLength > 1
-                ? new Array(paddingLength).fill(" ").join("")
-                : ". ";
+        const padding = paddingLength > 1 ? " ".repeat(paddingLength) : ". ";
         const title = `Short term (1s) crest factor${padding}Checksum(energy) ${checksum}`;
         const options = {
             interaction: {
@@ -458,33 +476,20 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
         return <Graph className="detailes-graph-shortterm" options={options} />;
     };
 
-    const renderGraphs = () => {
-        if (!isDetailed) {
-            return <div>Loading...</div>;
-        }
-        return (
-            <>
-                {file.channels.map(renderChannel)}
-                {renderLoudestPart()}
-                <div className="graph-row">
-                    {renderAvgSpectrum()}
-                    {renderAllpass()}
-                </div>
-                <div className="graph-row">
-                    {renderHistogram()}
-                    {renderPeakVsRms()}
-                </div>
-                {renderShortTermCrest()}
-            </>
-        );
-    };
-
     return (
-        <div className="main" id="main-details">
-            <h2 className="detailes-title">{file.file.name}</h2>
-            {renderGraphs()}
-            <VersionTag />
-        </div>
+        <>
+            {file.channels.map(renderChannel)}
+            {renderLoudestPart()}
+            <div className="graph-row">
+                {renderAvgSpectrum()}
+                {renderAllpass()}
+            </div>
+            <div className="graph-row">
+                {renderHistogram()}
+                {renderPeakVsRms()}
+            </div>
+            {renderShortTermCrest()}
+        </>
     );
 }
 

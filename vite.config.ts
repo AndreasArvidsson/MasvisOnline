@@ -1,6 +1,6 @@
 import path from "node:path";
+import type { UserConfig } from "vite";
 import { defineConfig } from "vite";
-import type { PluginOption, UserConfig } from "vite";
 
 // oxlint-disable-next-line import/no-default-export
 export default defineConfig((): UserConfig => {

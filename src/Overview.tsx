@@ -1,6 +1,7 @@
 import Graph from "owp.graph-react";
 import type { JSX } from "react";
 import "./Overview.css";
+import type { GraphOptions } from "./GraphOptions";
 import type { AnalysisFile } from "./types";
 import { getBorder, getColor, getTitle, toDb } from "./util";
 import { VersionTag } from "./VersionTag";
@@ -13,7 +14,7 @@ export function Overview({ files }: OverviewProps): JSX.Element {
     return (
         <div className="main" id="main-overview">
             {files.map((f) => {
-                const options: any = {
+                const options: GraphOptions = {
                     offset: 0,
                     interaction: {
                         trackMouse: false,
@@ -23,7 +24,7 @@ export function Overview({ files }: OverviewProps): JSX.Element {
                     border: getBorder(),
                     graph: {
                         compositeOperation: "darken",
-                        lineWidth: 1.000001,
+                        lineWidth: 1.000_001,
                     },
                     axes: {
                         x: {
@@ -38,12 +39,15 @@ export function Overview({ files }: OverviewProps): JSX.Element {
                     },
                 };
 
-                if (f.isLoaded && f.channels) {
-                    options.graph.dataY = f.channels.map((c) => c.graph);
-                    options.graph.colors = [
-                        getColor(0),
-                        ...f.channels.map((c, i) => getColor(i + 1)),
-                    ];
+                if (f.type !== "unloaded") {
+                    options.graph = {
+                        ...options.graph,
+                        dataY: f.channels.map((c) => c.graph),
+                        colors: [
+                            getColor(0),
+                            ...f.channels.map((c, i) => getColor(i + 1)),
+                        ],
+                    };
                 } else {
                     options.spinner = {
                         show: true,
@@ -62,20 +66,18 @@ export function Overview({ files }: OverviewProps): JSX.Element {
                         />
                         <div className="overview-graph-data-table">
                             <table>
-                                {f.isLoaded && (
+                                {f.type !== "unloaded" && (
                                     <tbody>
                                         <tr>
                                             <td>Crest</td>
                                             <td>
-                                                &nbsp;= {toDb(f.crest ?? 0, 1)}{" "}
-                                                dB
+                                                &nbsp;= {toDb(f.crest, 1)} dB
                                             </td>
                                         </tr>
                                         <tr>
                                             <td>Peak</td>
                                             <td>
-                                                &nbsp;= {toDb(f.peak ?? 0, 1)}{" "}
-                                                dBFS
+                                                &nbsp;= {toDb(f.peak, 1)} dBFS
                                             </td>
                                         </tr>
                                     </tbody>

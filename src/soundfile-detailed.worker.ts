@@ -7,25 +7,34 @@ import { toDb } from "./util";
 
 onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
     const data = e.data;
-    const result: DetailedWorkerResult = {
-        channels: data.channels,
-    };
 
-    calculateLoudestPart(data, result);
-    calculateAvgSpectrum(data, result);
-    calculateAllpass(data, result);
+    calculateLoudestPart(data);
+    calculateAvgSpectrum(data);
+    const allpass = calculateAllpass(data);
     calculateHistogram(data);
-    calculatePeakVsRms(data, result);
+    calculatePeakVsRms(data);
+
+    const result: DetailedWorkerResult = {
+        allpass: {
+            freqs: allpass.freqs,
+        },
+        channels: data.channels.map((channel, i) => {
+            return {
+                ...channel,
+                allpass: allpass.channels[i],
+            };
+        }),
+    };
 
     const transfer: Transferable[] = [];
 
     for (const channel of result.channels) {
         transfer.push(channel.graph.buffer);
-        transfer.push(channel.avgSpectrum!.buffer);
-        transfer.push(channel.histogram!.graph.buffer);
-        transfer.push(channel.peakVsRms!.peak.buffer);
-        transfer.push(channel.peakVsRms!.rms.buffer);
-        transfer.push(channel.peakVsRms!.crest.buffer);
+        transfer.push(channel.avgSpectrum.buffer);
+        transfer.push(channel.histogram.graph.buffer);
+        transfer.push(channel.peakVsRms.peak.buffer);
+        transfer.push(channel.peakVsRms.rms.buffer);
+        transfer.push(channel.peakVsRms.crest.buffer);
     }
 
     postMessage(result, "/", transfer);
@@ -155,15 +164,16 @@ function calculateAvgSpectrum(
     Timer.stop(timerKey);
 }
 
-function calculateAllpass(
-    data: DetailedWorkerInput,
-    result: DetailedWorkerResult,
-) {
+function calculateAllpass(data: DetailedWorkerInput): {
+    channels: number[][];
+    freqs: number[];
+} {
     const timerKey = `${data.filename} [2.3] Calculate allpass`;
     Timer.start(timerKey);
     const freqs = [20, 60, 200, 600, 2000, 6000, 20_000];
+    const result: number[][] = [];
 
-    for (const channel of result.channels) {
+    for (const channel of data.channels) {
         const graph = channel.graph;
         const res: number[] = [];
 
@@ -182,12 +192,12 @@ function calculateAllpass(
             res.push(peak / rms);
         }
 
-        channel.allpass = res;
+        result.push(res);
     }
 
-    result.allpass = { freqs };
-
     Timer.stop(timerKey);
+
+    return { channels: result, freqs };
 }
 
 function calculateHistogram(data: DetailedWorkerInput) {
