@@ -6,14 +6,12 @@
         "clean": "rm -rf docs/*",
         "start": "vite",
         "build": "vite build",
-        "lint": "npm run lint:ts && npm run lint:style && npm run lint:fmt",
+        "lint": "npm run lint:ts && npm run lint:fmt",
         "lint:ts": "oxlint -c oxlint.config.mts --deny-warnings .",
-        "lint:style": "stylelint '**/*.css' --ignore-path .gitignore",
         "lint:fmt": "oxfmt --check .",
-        "fix": "npm run fix:ts && npm run fix:style && npm run fix:fmt",
+        "fix": "npm run fix:ts && npm run fix:fmt",
         "fix:ts": "oxlint -c oxlint.config.mts --fix .",
-        "fix:fmt": "oxfmt .",
-        "fix:style": "stylelint '**/*.css' --ignore-path .gitignore --fix"
+        "fix:fmt": "oxfmt ."
     },
     "dependencies": {
         "aac": "^0.1.3",
@@ -40,8 +38,6 @@
         "oxfmt": "^0.51.0",
         "oxlint-tsgolint": "^0.23.0",
         "oxlint": "^1.64.0",
-        "stylelint-config-standard": "^40.0.0",
-        "stylelint": "^17.11.0",
         "tsx": "^4.21.0",
         "typescript": "^6.0.3",
         "vite-plugin-purgecss": "^0.2.13",

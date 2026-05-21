@@ -38,14 +38,9 @@ declare module "owp.graph-react" {
 declare module "owp.workers" {
     export default class Workers {
         public add<T>(
-            worker: string,
+            worker: string | workerConstructor,
             args?: unknown,
             transfer?: Transferable[],
         ): Promise<T>;
     }
-}
-
-declare module "*?worker" {
-    const path: string;
-    export default path;
 }

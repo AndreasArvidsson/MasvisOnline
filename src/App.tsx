@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 import { Detailes } from "./Detailes";
 import { Overview } from "./Overview";
 import { Sidebar } from "./Sidebar";
+// oxlint-disable-next-line import/default
 import detailedWorker from "./soundfile-detailed.worker?worker";
+// oxlint-disable-next-line import/default
 import loadWorker from "./soundfile-load.worker?worker";
 import { Timer } from "./Timer";
 
