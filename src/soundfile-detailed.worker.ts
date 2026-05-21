@@ -2,26 +2,39 @@ import { allpass } from "./dsp/allpass";
 import { calculatePow2Size, FFT } from "./dsp/FFT";
 import { blackmanWindow } from "./dsp/WindowFunction";
 import { Timer } from "./Timer";
-import type { DetailedWorkerInput, DetailedWorkerResult } from "./types";
+import type {
+    DetailedWorkerInput,
+    DetailedWorkerResult,
+    Histogram,
+    LoudestPart,
+    PeakVsRms,
+} from "./types";
 import { toDb } from "./util";
 
 onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
     const data = e.data;
-
-    calculateLoudestPart(data);
-    calculateAvgSpectrum(data);
+    const loudestPart = calculateLoudestPart(data);
+    const avgSpectrum = calculateAvgSpectrum(data);
     const allpass = calculateAllpass(data);
-    calculateHistogram(data);
-    calculatePeakVsRms(data);
+    const histogram = calculateHistogram(data);
+    const peakVsRms = calculatePeakVsRms(data);
 
     const result: DetailedWorkerResult = {
+        checksum: peakVsRms.checksum,
         allpass: {
             freqs: allpass.freqs,
         },
         channels: data.channels.map((channel, i) => {
             return {
                 ...channel,
+                loudestPart:
+                    loudestPart.channel === i
+                        ? loudestPart.loudestPart
+                        : undefined,
+                avgSpectrum: avgSpectrum[i],
                 allpass: allpass.channels[i],
+                histogram: histogram[i],
+                peakVsRms: peakVsRms.channels[i],
             };
         }),
     };
@@ -40,10 +53,10 @@ onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
     postMessage(result, "/", transfer);
 };
 
-function calculateLoudestPart(
-    data: DetailedWorkerInput,
-    result: DetailedWorkerResult,
-) {
+function calculateLoudestPart(data: DetailedWorkerInput): {
+    channel: number;
+    loudestPart: LoudestPart;
+} {
     const timerKey = `${data.filename} [2.1] Calculate loudest part`;
     Timer.start(timerKey);
     // Loudest part threshold.
@@ -51,12 +64,12 @@ function calculateLoudestPart(
     // Number of samples for a 20ms window.
     const windowSize = data.sampleRate * 0.02;
     let maxCount = 0;
-    let loudestChannel;
+    let loudestChannel = 0;
     let maxIndex = 0;
 
     // Calculate loudest part per channel.
-    for (let i = 0; i < result.channels.length; ++i) {
-        const graph = result.channels[i].graph;
+    for (let i = 0; i < data.channels.length; ++i) {
+        const graph = data.channels[i].graph;
         let start = 0;
         let end = -1;
         let count = 0;
@@ -98,21 +111,18 @@ function calculateLoudestPart(
         }
     }
 
-    // Store loudest part in channel.
-    if (loudestChannel != null) {
-        result.channels[loudestChannel].loudestPart = {
+    Timer.stop(timerKey);
+
+    return {
+        channel: loudestChannel,
+        loudestPart: {
             count: maxCount,
             index: maxIndex + windowSize / 2,
-        };
-    }
-
-    Timer.stop(timerKey);
+        },
+    };
 }
 
-function calculateAvgSpectrum(
-    data: DetailedWorkerInput,
-    result: DetailedWorkerResult,
-) {
+function calculateAvgSpectrum(data: DetailedWorkerInput): Float32Array[] {
     const timerKey = `${data.filename} [2.2] Calculate avg spectrum`;
     Timer.start(timerKey);
     const bufferSize = calculatePow2Size(data.sampleRate);
@@ -121,8 +131,9 @@ function calculateAvgSpectrum(
     const second = new Float32Array(bufferSize);
     // Number of frames/seconds that are summed together.
     const outSize = bufferSize / 2;
+    const result: Float32Array[] = [];
 
-    for (const channel of result.channels) {
+    for (const channel of data.channels) {
         const graph = channel.graph;
         const rms = channel.rms;
         const res = new Float32Array(outSize);
@@ -158,10 +169,12 @@ function calculateAvgSpectrum(
             res[i] = toDb(Math.sqrt(res[i] / div) / rms);
         }
 
-        channel.avgSpectrum = res;
+        result.push(res);
     }
 
     Timer.stop(timerKey);
+
+    return result;
 }
 
 function calculateAllpass(data: DetailedWorkerInput): {
@@ -200,7 +213,7 @@ function calculateAllpass(data: DetailedWorkerInput): {
     return { channels: result, freqs };
 }
 
-function calculateHistogram(data: DetailedWorkerInput) {
+function calculateHistogram(data: DetailedWorkerInput): Histogram[] {
     const timerKey = `${data.filename} [2.4] Calculate histogram`;
     Timer.start(timerKey);
     const maxValue = 2 ** (data.bitDepth - 1) - 1;
@@ -209,6 +222,7 @@ function calculateHistogram(data: DetailedWorkerInput) {
     const maxValueIndex = numValues / 2 - 1;
     // Normalize all sampling frequencies to 44100Hz.
     const sampleRateRatio = 44_100 / data.sampleRate;
+    const result: Histogram[] = [];
 
     for (const channel of data.channels) {
         const graph = channel.graph;
@@ -225,26 +239,29 @@ function calculateHistogram(data: DetailedWorkerInput) {
             res[Math.round((sample + 1) * maxValueIndex)] += sampleRateRatio;
         }
 
-        channel.histogram = {
+        result.push({
             graph: res,
             bits: Math.log2(count),
-        };
+        });
     }
 
     Timer.stop(timerKey);
+
+    return result;
 }
 
-function calculatePeakVsRms(
-    data: DetailedWorkerInput,
-    result: DetailedWorkerResult,
-) {
+function calculatePeakVsRms(data: DetailedWorkerInput): {
+    channels: PeakVsRms[];
+    checksum: number;
+} {
     const timerKey = `${data.filename} [2.5] Calculate peak vs RMS`;
     Timer.start(timerKey);
     const maxValue = 2 ** (data.bitDepth - 1) - 1;
     const maxValueNeg = -(2 ** (data.bitDepth - 1));
     let checksum = 0;
+    const result: PeakVsRms[] = [];
 
-    for (const channel of result.channels) {
+    for (const channel of data.channels) {
         const graph = channel.graph;
         const numFrames = Math.ceil(data.numSamples / data.sampleRate);
         const peakRes = new Float32Array(numFrames);
@@ -275,10 +292,10 @@ function calculatePeakVsRms(
             crestRes[s] = toDb(peak / rms);
         }
 
-        channel.peakVsRms = { peak: peakRes, rms: rmsRes, crest: crestRes };
+        result.push({ peak: peakRes, rms: rmsRes, crest: crestRes });
     }
 
-    result.checksum = checksum;
-
     Timer.stop(timerKey);
+
+    return { channels: result, checksum };
 }

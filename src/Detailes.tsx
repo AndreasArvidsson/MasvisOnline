@@ -96,17 +96,19 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
             },
         };
 
-        const minOffset = Math.round(file.numSamples * 0.0004);
-        const loudestPartOffset = file.sampleRate * 0.05;
-        //Use a min offset so that the hightlight isn't to small.
-        const offset = Math.max(minOffset, loudestPartOffset);
-        const minIndex = Math.max(0, channel.loudestPart.index - offset);
-        const maxIndex = minIndex + 2 * offset;
-        options.highlight = {
-            ...options.highlight,
-            xMin: minIndex,
-            xMax: maxIndex,
-        };
+        if (channel.loudestPart != null) {
+            const minOffset = Math.round(file.numSamples * 0.0004);
+            const loudestPartOffset = file.sampleRate * 0.05;
+            //Use a min offset so that the hightlight isn't to small.
+            const offset = Math.max(minOffset, loudestPartOffset);
+            const minIndex = Math.max(0, channel.loudestPart.index - offset);
+            const maxIndex = minIndex + 2 * offset;
+            options.highlight = {
+                ...options.highlight,
+                xMin: minIndex,
+                xMax: maxIndex,
+            };
+        }
 
         return (
             <Graph
@@ -118,9 +120,12 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
     };
 
     const renderLoudestPart = () => {
-        const i = file.channels.findIndex((c) => Boolean(c.loudestPart));
+        const i = file.channels.findIndex((c) => c.loudestPart != null);
         const channel = file.channels[i];
         const loudestPart = channel.loudestPart;
+        if (loudestPart == null) {
+            return null;
+        }
         const name = getName(i + 1);
         const time = round(loudestPart.index / file.sampleRate, 2);
         const count = loudestPart.count;

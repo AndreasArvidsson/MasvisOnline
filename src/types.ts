@@ -22,7 +22,7 @@ export interface OverviewChannel {
 }
 
 export interface DetailedChannel extends OverviewChannel {
-    loudestPart: LoudestPart;
+    loudestPart?: LoudestPart;
     avgSpectrum: Float32Array;
     allpass: number[];
     histogram: Histogram;
