@@ -1,4 +1,3 @@
-
 .sidebar,
 .sidebar-bottom {
     width: 500px;
@@ -18,7 +17,7 @@
 
 .sidebar > div:nth-child(2),
 .sidebar > div:nth-child(3) {
-   height: 40px;
+    height: 40px;
 }
 
 .sidebar > div:nth-child(2),

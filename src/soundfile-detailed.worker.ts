@@ -1,0 +1,274 @@
+import { allpass } from "./dsp/allpass";
+import { calculatePow2Size, FFT } from "./dsp/FFT";
+import { blackmanWindow } from "./dsp/WindowFunction";
+import { Timer } from "./Timer";
+import type { DetailedWorkerInput, DetailedWorkerResult } from "./types";
+import { toDb } from "./util";
+
+onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
+    const data = e.data;
+    const result: DetailedWorkerResult = {
+        channels: data.channels,
+    };
+
+    calculateLoudestPart(data, result);
+    calculateAvgSpectrum(data, result);
+    calculateAllpass(data, result);
+    calculateHistogram(data);
+    calculatePeakVsRms(data, result);
+
+    const transfer: Transferable[] = [];
+
+    for (const channel of result.channels) {
+        transfer.push(channel.graph.buffer);
+        transfer.push(channel.avgSpectrum!.buffer);
+        transfer.push(channel.histogram!.graph.buffer);
+        transfer.push(channel.peakVsRms!.peak.buffer);
+        transfer.push(channel.peakVsRms!.rms.buffer);
+        transfer.push(channel.peakVsRms!.crest.buffer);
+    }
+
+    postMessage(result, "/", transfer);
+};
+
+function calculateLoudestPart(
+    data: DetailedWorkerInput,
+    result: DetailedWorkerResult,
+) {
+    const timerKey = `${data.filename} [2.1] Calculate loudest part`;
+    Timer.start(timerKey);
+    // Loudest part threshold.
+    const threshold = data.peak * 0.95;
+    // Number of samples for a 20ms window.
+    const windowSize = data.sampleRate * 0.02;
+    let maxCount = 0;
+    let loudestChannel;
+    let maxIndex = 0;
+
+    // Calculate loudest part per channel.
+    for (let i = 0; i < result.channels.length; ++i) {
+        const graph = result.channels[i].graph;
+        let start = 0;
+        let end = -1;
+        let count = 0;
+
+        // Initialize window.
+        let size = Math.min(windowSize, graph.length) - 1;
+        while (end < size) {
+            if (Math.abs(graph[++end]) > threshold) {
+                ++count;
+            }
+        }
+
+        // Move window to end.
+        let maxIndexC = start;
+        let maxCountC = count;
+        size = graph.length - 1;
+
+        while (end < size) {
+            // Oldest sample(now to be removed) was above threshold. Decrease count.
+            if (Math.abs(graph[start++]) > threshold) {
+                --count;
+            }
+            // New sample is above threshold. Increase count.
+            if (Math.abs(graph[++end]) > threshold) {
+                ++count;
+            }
+            // Update max count for channel.
+            if (count > maxCountC) {
+                maxCountC = count;
+                maxIndexC = start;
+            }
+        }
+
+        // Update max for track.
+        if (maxCountC > maxCount) {
+            maxCount = maxCountC;
+            maxIndex = maxIndexC;
+            loudestChannel = i;
+        }
+    }
+
+    // Store loudest part in channel.
+    if (loudestChannel != null) {
+        result.channels[loudestChannel].loudestPart = {
+            count: maxCount,
+            index: maxIndex + windowSize / 2,
+        };
+    }
+
+    Timer.stop(timerKey);
+}
+
+function calculateAvgSpectrum(
+    data: DetailedWorkerInput,
+    result: DetailedWorkerResult,
+) {
+    const timerKey = `${data.filename} [2.2] Calculate avg spectrum`;
+    Timer.start(timerKey);
+    const bufferSize = calculatePow2Size(data.sampleRate);
+    const blackman = blackmanWindow(data.sampleRate).getData();
+    const fft = new FFT(bufferSize, data.sampleRate);
+    const second = new Float32Array(bufferSize);
+    // Number of frames/seconds that are summed together.
+    const outSize = bufferSize / 2;
+
+    for (const channel of result.channels) {
+        const graph = channel.graph;
+        const rms = channel.rms;
+        const res = new Float32Array(outSize);
+
+        // Loop over each second and sum FFT components together.
+        const length = graph.length;
+        for (let i = 0; i < length; ) {
+            // 1sec blackman window.
+            const maxIndex = Math.min(i + data.sampleRate, length);
+            let s = 0;
+            for (; i < maxIndex; ++i, ++s) {
+                second[s] = graph[i] * blackman[s];
+            }
+            // Fill rest of window with zeros.
+            for (; s < bufferSize; ++s) {
+                second[s] = 0;
+            }
+
+            // FFT
+            fft.fft(second);
+            const real = fft.getReal();
+            const imag = fft.getImaginary();
+
+            for (let j = 0; j < outSize; ++j) {
+                // Add square sum to total.
+                res[j] += real[j] * real[j] + imag[j] * imag[j];
+            }
+        }
+
+        // Convert square sum to normalized dB spectrum.
+        const div = data.sampleRate * length;
+        for (let i = 0; i < outSize; ++i) {
+            res[i] = toDb(Math.sqrt(res[i] / div) / rms);
+        }
+
+        channel.avgSpectrum = res;
+    }
+
+    Timer.stop(timerKey);
+}
+
+function calculateAllpass(
+    data: DetailedWorkerInput,
+    result: DetailedWorkerResult,
+) {
+    const timerKey = `${data.filename} [2.3] Calculate allpass`;
+    Timer.start(timerKey);
+    const freqs = [20, 60, 200, 600, 2000, 6000, 20_000];
+
+    for (const channel of result.channels) {
+        const graph = channel.graph;
+        const res: number[] = [];
+
+        for (const fc of freqs) {
+            const allpassFilter = allpass(fc, data.sampleRate);
+            let peak = 0;
+            let sqrSum = 0;
+
+            for (const sample of graph) {
+                const value = allpassFilter.processSample(sample);
+                peak = Math.max(peak, Math.abs(value));
+                sqrSum += value ** 2;
+            }
+
+            const rms = Math.sqrt(sqrSum / data.numSamples);
+            res.push(peak / rms);
+        }
+
+        channel.allpass = res;
+    }
+
+    result.allpass = { freqs };
+
+    Timer.stop(timerKey);
+}
+
+function calculateHistogram(data: DetailedWorkerInput) {
+    const timerKey = `${data.filename} [2.4] Calculate histogram`;
+    Timer.start(timerKey);
+    const maxValue = 2 ** (data.bitDepth - 1) - 1;
+    // Normalize all bit depth to 16bits.
+    const numValues = 2 ** 16;
+    const maxValueIndex = numValues / 2 - 1;
+    // Normalize all sampling frequencies to 44100Hz.
+    const sampleRateRatio = 44_100 / data.sampleRate;
+
+    for (const channel of data.channels) {
+        const graph = channel.graph;
+        const res = new Float32Array(numValues);
+        const used: Record<number, boolean> = {};
+        let count = 0;
+
+        for (const sample of graph) {
+            const v = Math.round((sample + 1) * maxValue);
+            if (!used[v]) {
+                used[v] = true;
+                ++count;
+            }
+            res[Math.round((sample + 1) * maxValueIndex)] += sampleRateRatio;
+        }
+
+        channel.histogram = {
+            graph: res,
+            bits: Math.log2(count),
+        };
+    }
+
+    Timer.stop(timerKey);
+}
+
+function calculatePeakVsRms(
+    data: DetailedWorkerInput,
+    result: DetailedWorkerResult,
+) {
+    const timerKey = `${data.filename} [2.5] Calculate peak vs RMS`;
+    Timer.start(timerKey);
+    const maxValue = 2 ** (data.bitDepth - 1) - 1;
+    const maxValueNeg = -(2 ** (data.bitDepth - 1));
+    let checksum = 0;
+
+    for (const channel of result.channels) {
+        const graph = channel.graph;
+        const numFrames = Math.ceil(data.numSamples / data.sampleRate);
+        const peakRes = new Float32Array(numFrames);
+        const rmsRes = new Float32Array(numFrames);
+        const crestRes = new Float32Array(numFrames);
+        const length = graph.length;
+
+        // Loop over each second and calculate rms and peak.
+        for (let s = 0, i = 0; i < length; ++s) {
+            const numSamples = Math.min(data.sampleRate, length - i);
+            const maxIndex = i + numSamples;
+            let peak = 0;
+            let sqrSum = 0;
+
+            // 1 sec window
+            for (; i < maxIndex; ++i) {
+                peak = Math.max(peak, Math.abs(graph[i]));
+                sqrSum += graph[i] ** 2;
+                checksum +=
+                    Math.ceil(
+                        graph[i] * (graph[i] < 0 ? maxValueNeg : maxValue),
+                    ) ** 2;
+            }
+
+            const rms = Math.sqrt(sqrSum / numSamples);
+            peakRes[s] = toDb(peak);
+            rmsRes[s] = toDb(rms);
+            crestRes[s] = toDb(peak / rms);
+        }
+
+        channel.peakVsRms = { peak: peakRes, rms: rmsRes, crest: crestRes };
+    }
+
+    result.checksum = checksum;
+
+    Timer.stop(timerKey);
+}

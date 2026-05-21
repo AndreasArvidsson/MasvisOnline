@@ -1,5 +1,3 @@
-node_modules
-samples
-*.txt
-package-lock.json
-stuff
+/node_modules/
+/package-lock.json
+/todo.txt

@@ -1,18 +1,41 @@
-
-import React from "react";
-import PropTypes from "prop-types";
-import Glyph from "owp.glyphicons";
+import React, { createRef } from "react";
+import type { ChangeEvent, JSX } from "react";
+import type { AnalysisFile } from "./types";
 import "./Sidebar.css";
 
-const inputRef = React.createRef();
+const inputRef = createRef<HTMLInputElement>();
 
-const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, removeAllFiles, analyzeAll, saveImage }) => {
-    const onChange = (e) => {
+function Glyph({ type, onClick }: { type: string; onClick?: () => void }) {
+    return <span className={`glyphicon glyphicon-${type}`} onClick={onClick} />;
+}
+
+interface SidebarProps {
+    files: AnalysisFile[];
+    selectedFile: AnalysisFile | undefined;
+    selectFile: (file: AnalysisFile | undefined) => void;
+    addFiles: (files: FileList) => void;
+    removeFile: (file: AnalysisFile) => void;
+    removeAllFiles: () => void;
+    analyzeAll: () => void;
+    saveImage: () => void;
+}
+
+export function Sidebar({
+    files,
+    selectedFile,
+    selectFile,
+    addFiles,
+    removeFile,
+    removeAllFiles,
+    analyzeAll,
+    saveImage,
+}: SidebarProps): JSX.Element {
+    const onChange = (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (files) {
             addFiles(files);
         }
-    }
+    };
     return (
         <div className="sidebar">
             <input
@@ -26,8 +49,10 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
             <div>
                 <span
                     className="clickable"
-                    onClick={() => inputRef.current.click()}
-                    title={"Add new file.\nFiles can also be dropped anywhere on this page."}
+                    onClick={() => inputRef.current?.click()}
+                    title={
+                        "Add new file.\nFiles can also be dropped anywhere on this page."
+                    }
                 >
                     Add files <Glyph type="plus" />
                 </span>
@@ -45,8 +70,8 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
             </div>
 
             <div
-                className={"clickable" + (!selectedFile ? " selected" : "")}
-                onClick={() => selectFile(null)}
+                className={`clickable${!selectedFile ? " selected" : ""}`}
+                onClick={() => selectFile(undefined)}
                 title="View overview of all files"
             >
                 Overview <Glyph type="eye-open" />
@@ -55,26 +80,38 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
             <div className="sidebar-table-wrapper">
                 <table className="table table-no-wrap table-striped">
                     <tbody>
-                        {files.map(f =>
+                        {files.map((f) => (
                             <tr
                                 key={f.key}
-                                className={selectedFile === f ? "selected" : null}
+                                className={
+                                    selectedFile === f ? "selected" : undefined
+                                }
                             >
                                 <td
                                     className="clickable"
                                     onClick={() => selectFile(f)}
-                                    title={"View detailes for: " + f.file.name}
+                                    title={`View detailes for: ${f.file.name}`}
                                 >
-                                    <Glyph type={f.isDetailed ? "stats" : "none"} /> {f.file.name}
+                                    <Glyph
+                                        type={
+                                            f.type === "detailed"
+                                                ? "stats"
+                                                : "none"
+                                        }
+                                    />{" "}
+                                    {f.file.name}
                                 </td>
                                 <td
                                     className="table-col-icon clickable"
-                                    title={"Remove: " + f.file.name}
+                                    title={`Remove: ${f.file.name}`}
                                 >
-                                    <Glyph type="trash danger" onClick={() => removeFile(f)} />
+                                    <Glyph
+                                        type="trash danger"
+                                        onClick={() => removeFile(f)}
+                                    />
                                 </td>
                             </tr>
-                        )}
+                        ))}
                     </tbody>
                 </table>
             </div>
@@ -102,26 +139,12 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
                     <span
                         className="clickable"
                         onClick={saveImage}
-                        title={"Download image of: " + (selectedFile ? selectedFile.file.name : "Overview")}
+                        title={`Download image of: ${selectedFile ? selectedFile.file.name : "Overview"}`}
                     >
                         Save image <Glyph type="download" />
                     </span>
                 </div>
             </div>
-
         </div>
     );
-};
-
-Sidebar.propTypes = {
-    files: PropTypes.array.isRequired,
-    selectedFile: PropTypes.object,
-    selectFile: PropTypes.func.isRequired,
-    addFiles: PropTypes.func.isRequired,
-    removeFile: PropTypes.func.isRequired,
-    removeAllFiles: PropTypes.func.isRequired,
-    analyzeAll: PropTypes.func.isRequired,
-    saveImage: PropTypes.func.isRequired
-};
-
-export default Sidebar;
+}

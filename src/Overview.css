@@ -1,4 +1,3 @@
-
 #main-overview {
     padding-top: 10px;
     width: 800px;
@@ -7,13 +6,13 @@
 .overview-graph-div {
     display: inline-block;
     width: 645px;
-    height: 77px; 
+    height: 77px;
 }
 
 .overview-graph-data-table {
     display: inline-block;
     width: 120px;
-    height: 77px; 
+    height: 77px;
     margin-left: 2px;
     position: relative;
 }
@@ -24,10 +23,10 @@
     height: 50px;
 }
 
-.overview-graph-data-table td  {
+.overview-graph-data-table td {
     padding: 0;
 }
 
-.overview-graph-data-table td:first-child  {
+.overview-graph-data-table td:first-child {
     text-align: right;
 }
