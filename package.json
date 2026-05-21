@@ -5,7 +5,7 @@
     "scripts": {
         "clean": "rm -rf docs/*",
         "start": "vite",
-        "build": "vite build",
+        "build": "npm run clean && vite build",
         "lint": "npm run lint:ts && npm run lint:fmt",
         "lint:ts": "oxlint -c oxlint.config.mts --deny-warnings .",
         "lint:fmt": "oxfmt --check .",
