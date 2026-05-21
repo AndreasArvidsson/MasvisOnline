@@ -1,28 +1,17 @@
 import { defineConfig } from "oxlint";
 
 // FIXME: These rules should probably be re-enabled eventually
-const temporarilyDisabled = [
-    "typescript/no-dynamic-delete",
-
-    // Requires newer build target
-    "unicorn/prefer-top-level-await",
-];
+const temporarilyDisabled = ["typescript/no-dynamic-delete"];
 
 const disabledRules = [
     ...temporarilyDisabled,
     "eslint/arrow-body-style",
-    "eslint/capitalized-comments",
-    "eslint/class-methods-use-this",
-    "eslint/complexity",
     "eslint/id-length",
     "eslint/init-declarations",
-    "eslint/max-classes-per-file",
-    "eslint/max-depth",
     "eslint/max-lines-per-function",
     "eslint/max-lines",
     "eslint/max-params",
     "eslint/max-statements",
-    "eslint/no-await-in-loop",
     "eslint/no-console",
     "eslint/no-continue",
     "eslint/no-eq-null",
@@ -35,7 +24,6 @@ const disabledRules = [
     "eslint/no-undefined",
     "eslint/no-underscore-dangle",
     "eslint/no-use-before-define",
-    "eslint/no-void",
     "eslint/prefer-destructuring",
     "eslint/sort-imports",
     "eslint/sort-keys",
@@ -45,7 +33,6 @@ const disabledRules = [
     "import/group-exports",
     "import/max-dependencies",
     "import/no-named-export",
-    "import/no-namespace",
     "import/no-nodejs-modules",
     "import/no-relative-parent-imports",
     "import/prefer-default-export",
@@ -57,38 +44,24 @@ const disabledRules = [
     "promise/avoid-new",
     "promise/prefer-await-to-callbacks",
     "promise/prefer-await-to-then",
-    "react-perf/jsx-no-jsx-as-prop",
-    "react-perf/jsx-no-new-array-as-prop",
     "react-perf/jsx-no-new-function-as-prop",
     "react-perf/jsx-no-new-object-as-prop",
     "react/exhaustive-deps",
     "react/forbid-component-props",
-    "react/jsx-handler-names",
     "react/jsx-max-depth",
-    "react/jsx-props-no-spreading",
-    "react/no-array-index-key",
     "react/no-multi-comp",
-    "react/only-export-components",
     "react/react-in-jsx-scope",
     "typescript/explicit-function-return-type",
-    "typescript/no-base-to-string",
     "typescript/parameter-properties",
     "typescript/prefer-readonly-parameter-types",
-    "typescript/promise-function-async",
-    "typescript/strict-void-return",
     "unicorn/filename-case",
-    "unicorn/no-array-callback-reference",
-    "unicorn/no-lonely-if",
     "unicorn/no-negated-condition",
     "unicorn/no-null",
     "unicorn/no-useless-undefined",
     "unicorn/prefer-at",
-    "unicorn/prefer-global-this",
     "unicorn/prefer-module",
     "unicorn/prefer-query-selector",
     "unicorn/prefer-spread",
-    "unicorn/prefer-ternary",
-    "unicorn/switch-case-braces",
 ];
 
 // oxlint-disable-next-line import/no-default-export

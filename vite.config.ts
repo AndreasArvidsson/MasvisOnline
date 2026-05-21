@@ -30,16 +30,6 @@ export default defineConfig((): UserConfig => {
 
 function legacyAudioPackages(): Plugin {
     const propTypesStub = "\0prop-types-stub";
-    const avEntry = path.join(__dirname, "node_modules/av/src/aurora.js");
-    const browserFileSource = path.join(
-        __dirname,
-        "node_modules/av/src/sources/browser/file.js",
-    );
-    const browserHttpSource = path.join(
-        __dirname,
-        "node_modules/av/src/sources/browser/http.js",
-    );
-    const flacOgg = path.join(__dirname, "node_modules/flac.js/src/ogg.js");
 
     return {
         enforce: "pre",
@@ -50,41 +40,28 @@ function legacyAudioPackages(): Plugin {
                 return "export default { object: undefined };";
             }
 
+            if (id.endsWith(".coffee")) {
+                const jsPath = `${id.slice(0, -".coffee".length)}.js`;
+                return fs.readFileSync(jsPath, "utf8");
+            }
+
             const normalizedId = id.replaceAll("\\", "/");
 
             if (normalizedId.endsWith("/node_modules/flac.js/src/ogg.js")) {
                 return fs
-                    .readFileSync(flacOgg, "utf8")
+                    .readFileSync(id, "utf8")
                     .replace(String.raw`"\177FLAC"`, String.raw`"\x7fFLAC"`);
-            }
-
-            if (
-                normalizedId.endsWith(
-                    "/node_modules/av/src/sources/browser/file.coffee",
-                )
-            ) {
-                return fs.readFileSync(browserFileSource, "utf8");
-            }
-
-            if (
-                normalizedId.endsWith(
-                    "/node_modules/av/src/sources/browser/http.coffee",
-                )
-            ) {
-                return fs.readFileSync(browserHttpSource, "utf8");
             }
 
             return undefined;
         },
 
         resolveId(source) {
-            const normalizedSource = source.replaceAll("\\", "/");
-
-            if (normalizedSource === "av") {
-                return avEntry;
+            if (source === "av") {
+                return path.join(__dirname, "node_modules/av/src/aurora.js");
             }
 
-            if (normalizedSource === "prop-types") {
+            if (source === "prop-types") {
                 return propTypesStub;
             }
 
