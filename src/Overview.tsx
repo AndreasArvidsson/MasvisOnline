@@ -4,7 +4,10 @@ import type { JSX } from "react";
 import "./Overview.css";
 import type { GraphOptions } from "./types/GraphOptions";
 import type { AnalysisFile } from "./types/types";
-import { getBorder, getColor, getTitle, toDb } from "./util/util";
+import { getBorder } from "./util/getBorder";
+import { getColor } from "./util/getColor";
+import { getTitle } from "./util/getTitle";
+import { toDb } from "./util/toDb";
 import { VersionTag } from "./VersionTag";
 
 interface OverviewProps {

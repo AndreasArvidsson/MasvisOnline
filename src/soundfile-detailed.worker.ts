@@ -8,7 +8,7 @@ import type {
     LoudestPart,
     PeakVsRms,
 } from "./types/types";
-import { toDb } from "./util/util";
+import { toDb } from "./util/toDb";
 
 onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
     const data = e.data;

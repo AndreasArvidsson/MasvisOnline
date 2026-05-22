@@ -1,4 +1,3 @@
-import Feedback from "owp.feedback";
 import downloadImage from "owp.get-html-as-image";
 import Workers from "owp.workers";
 import type { DragEvent, JSX } from "react";
@@ -20,6 +19,7 @@ import type {
     LoadWorkerResult,
     UnloadedFile,
 } from "./types/types";
+import { notifyError } from "./util/notifyError";
 
 let nextState = 1;
 
@@ -55,9 +55,13 @@ export function App(): JSX.Element {
             if (name.includes(".")) {
                 name = name.slice(0, name.lastIndexOf("."));
             }
-            downloadImage("main-details", `masvis-online ${name}.png`);
+            downloadImage("main-details", `masvis-online ${name}.png`).catch(
+                notifyError,
+            );
         } else {
-            downloadImage("main-overview", "masvis-online overview.png");
+            downloadImage("main-overview", "masvis-online overview.png").catch(
+                notifyError,
+            );
         }
     };
 
@@ -86,9 +90,7 @@ export function App(): JSX.Element {
                 Object.assign(file, loadedFile);
                 forceUpdate();
             })
-            .catch((error: unknown) => {
-                Feedback.error(error, { sticky: true });
-            });
+            .catch(notifyError);
     };
 
     const calculateDetails = (file: LoadedFile) => {
@@ -121,9 +123,7 @@ export function App(): JSX.Element {
                 Object.assign(file, detailedFile);
                 forceUpdate();
             })
-            .catch((error: unknown) => {
-                Feedback.error(error, { sticky: true });
-            });
+            .catch(notifyError);
     };
 
     const addFiles = (newFiles: FileList) => {

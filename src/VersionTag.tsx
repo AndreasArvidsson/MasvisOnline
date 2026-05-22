@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import packageJson from "../package.json";
-import { pad } from "./util/util";
+import { pad } from "./util/pad";
 
 export function VersionTag(): JSX.Element {
     const date = new Date();

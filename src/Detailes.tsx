@@ -14,17 +14,15 @@ import type {
     DetailedChannel,
     DetailedFile,
 } from "./types/types";
-import {
-    getBorder,
-    getColor,
-    getName,
-    getTitle,
-    round,
-    tickerLabelformatterTime,
-    tickerValuePostFormatter,
-    tickerValuePreFormatter,
-    toDb,
-} from "./util/util";
+import { getBorder } from "./util/getBorder";
+import { getColor } from "./util/getColor";
+import { getName } from "./util/getName";
+import { getTitle } from "./util/getTitle";
+import { round } from "./util/round";
+import { tickerLabelformatterTime } from "./util/tickerLabelformatterTime";
+import { tickerValuePostFormatter } from "./util/tickerValuePostFormatter";
+import { tickerValuePreFormatter } from "./util/tickerValuePreFormatter";
+import { toDb } from "./util/toDb";
 import { VersionTag } from "./VersionTag";
 
 interface DetailesProps {
@@ -37,14 +35,15 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
             <h2 className="detailes-title">{file.file.name}</h2>
 
             {file.type === "detailed" ? (
-                <DetailedGraphs file={file} />
+                <>
+                    <DetailedGraphs file={file} />
+                    <VersionTag />
+                </>
             ) : (
-                <div className="fs-5 ps-3">
+                <div className="fs-5 text-center">
                     <IconLoading /> Loading...
                 </div>
             )}
-
-            <VersionTag />
         </div>
     );
 }
