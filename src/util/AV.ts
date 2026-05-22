@@ -7,10 +7,10 @@
 // oxlint-disable import/no-unassigned-import
 
 import AV from "av";
-import "aac";
-import "alac";
 import "flac.js";
 import "mp3";
+import "alac";
+import "aac";
 
 // Fixes main_data_begin pointer error
 const mp3Decode = AV.Decoder.find("mp3") as { prototype: any } | null;

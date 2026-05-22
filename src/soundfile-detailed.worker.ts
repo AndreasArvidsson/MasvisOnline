@@ -1,15 +1,14 @@
 import { allpass } from "./dsp/allpass";
 import { calculatePow2Size, FFT } from "./dsp/FFT";
 import { blackmanWindow } from "./dsp/WindowFunction";
-import { Timer } from "./Timer";
 import type {
     DetailedWorkerInput,
     DetailedWorkerResult,
     Histogram,
     LoudestPart,
     PeakVsRms,
-} from "./types";
-import { toDb } from "./util";
+} from "./types/types";
+import { toDb } from "./util/util";
 
 onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
     const data = e.data;
@@ -50,7 +49,7 @@ onmessage = (e: MessageEvent<DetailedWorkerInput>) => {
         transfer.push(channel.peakVsRms.crest.buffer);
     }
 
-    postMessage(result, "/", transfer);
+    postMessage(result, { transfer });
 };
 
 function calculateLoudestPart(data: DetailedWorkerInput): {
@@ -58,7 +57,7 @@ function calculateLoudestPart(data: DetailedWorkerInput): {
     loudestPart: LoudestPart;
 } {
     const timerKey = `${data.filename} [2.1] Calculate loudest part`;
-    Timer.start(timerKey);
+    console.time(timerKey);
     // Loudest part threshold.
     const threshold = data.peak * 0.95;
     // Number of samples for a 20ms window.
@@ -111,7 +110,7 @@ function calculateLoudestPart(data: DetailedWorkerInput): {
         }
     }
 
-    Timer.stop(timerKey);
+    console.timeEnd(timerKey);
 
     return {
         channel: loudestChannel,
@@ -124,7 +123,7 @@ function calculateLoudestPart(data: DetailedWorkerInput): {
 
 function calculateAvgSpectrum(data: DetailedWorkerInput): Float32Array[] {
     const timerKey = `${data.filename} [2.2] Calculate avg spectrum`;
-    Timer.start(timerKey);
+    console.time(timerKey);
     const bufferSize = calculatePow2Size(data.sampleRate);
     const blackman = blackmanWindow(data.sampleRate).getData();
     const fft = new FFT(bufferSize, data.sampleRate);
@@ -172,7 +171,7 @@ function calculateAvgSpectrum(data: DetailedWorkerInput): Float32Array[] {
         result.push(res);
     }
 
-    Timer.stop(timerKey);
+    console.timeEnd(timerKey);
 
     return result;
 }
@@ -182,7 +181,7 @@ function calculateAllpass(data: DetailedWorkerInput): {
     freqs: number[];
 } {
     const timerKey = `${data.filename} [2.3] Calculate allpass`;
-    Timer.start(timerKey);
+    console.time(timerKey);
     const freqs = [20, 60, 200, 600, 2000, 6000, 20_000];
     const result: number[][] = [];
 
@@ -208,14 +207,14 @@ function calculateAllpass(data: DetailedWorkerInput): {
         result.push(res);
     }
 
-    Timer.stop(timerKey);
+    console.timeEnd(timerKey);
 
     return { channels: result, freqs };
 }
 
 function calculateHistogram(data: DetailedWorkerInput): Histogram[] {
     const timerKey = `${data.filename} [2.4] Calculate histogram`;
-    Timer.start(timerKey);
+    console.time(timerKey);
     const maxValue = 2 ** (data.bitDepth - 1) - 1;
     // Normalize all bit depth to 16bits.
     const numValues = 2 ** 16;
@@ -245,7 +244,7 @@ function calculateHistogram(data: DetailedWorkerInput): Histogram[] {
         });
     }
 
-    Timer.stop(timerKey);
+    console.timeEnd(timerKey);
 
     return result;
 }
@@ -255,7 +254,7 @@ function calculatePeakVsRms(data: DetailedWorkerInput): {
     checksum: number;
 } {
     const timerKey = `${data.filename} [2.5] Calculate peak vs RMS`;
-    Timer.start(timerKey);
+    console.time(timerKey);
     const maxValue = 2 ** (data.bitDepth - 1) - 1;
     const maxValueNeg = -(2 ** (data.bitDepth - 1));
     let checksum = 0;
@@ -295,7 +294,7 @@ function calculatePeakVsRms(data: DetailedWorkerInput): {
         result.push({ peak: peakRes, rms: rmsRes, crest: crestRes });
     }
 
-    Timer.stop(timerKey);
+    console.timeEnd(timerKey);
 
     return { channels: result, checksum };
 }

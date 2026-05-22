@@ -1,12 +1,11 @@
-import { AV } from "./AV";
-import { Timer } from "./Timer";
-import type { LoadWorkerInput, LoadWorkerResult } from "./types";
+import type { LoadWorkerInput, LoadWorkerResult } from "./types/types";
+import { AV } from "./util/AV";
 
 onmessage = (e: MessageEvent<LoadWorkerInput>) => {
     const file = e.data.file;
     const timerKey = `${file.name} [1.1] Decode file to buffer`;
 
-    Timer.start(timerKey);
+    console.time(timerKey);
 
     const asset = AV.Asset.fromFile(file);
     let numChannels: number | undefined;
@@ -26,7 +25,7 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
             return;
         }
 
-        Timer.stop(timerKey);
+        console.timeEnd(timerKey);
 
         const result = parseBuffer({
             file,
@@ -38,9 +37,9 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
         });
 
         // Add arrays buffers to the transfer list. Decreases message time.
-        const transfers = result.channels.map((c) => c.graph.buffer);
+        const transfer = result.channels.map((c) => c.graph.buffer);
 
-        postMessage(result, "/", transfers);
+        postMessage(result, { transfer });
     };
 
     asset.on("error", (error) => {
@@ -83,7 +82,7 @@ function parseBuffer({
     buffer,
 }: ParseProps): LoadWorkerResult {
     const timerKey = `${file.name} [1.2] Parse buffer`;
-    Timer.start(timerKey);
+    console.time(timerKey);
 
     // Divide sampledata into channels and calculate channel stats.
     const channels = [];
@@ -135,7 +134,7 @@ function parseBuffer({
         channels,
     };
 
-    Timer.stop(timerKey);
+    console.timeEnd(timerKey);
 
     return result;
 }

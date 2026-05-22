@@ -10,18 +10,16 @@ import { Sidebar } from "./Sidebar";
 import detailedWorker from "./soundfile-detailed.worker?worker";
 // oxlint-disable-next-line import/default
 import loadWorker from "./soundfile-load.worker?worker";
-import { Timer } from "./Timer";
-
 import type {
     AnalysisFile,
+    DetailedFile,
     DetailedWorkerInput,
     DetailedWorkerResult,
-    DetailedFile,
     LoadedFile,
     LoadWorkerInput,
     LoadWorkerResult,
     UnloadedFile,
-} from "./types";
+} from "./types/types";
 
 let nextState = 1;
 
@@ -49,10 +47,10 @@ export function App(): JSX.Element {
         if (selectedFile?.type === "loaded") {
             calculateDetails(selectedFile);
         }
-    }, [selectedFile]);
+    }, [selectedFile?.key, selectedFile?.type]);
 
     const saveImage = () => {
-        if (selectedFile) {
+        if (selectedFile != null) {
             let name = selectedFile.file.name;
             if (name.includes(".")) {
                 name = name.slice(0, name.lastIndexOf("."));
@@ -68,13 +66,17 @@ export function App(): JSX.Element {
             return;
         }
         file.isProcessing = true;
+        // Re-render to show loading state.
+        forceUpdate();
         const timerKey = `${file.file.name} [1.x] Calculate overview`;
-        Timer.start(timerKey);
-        const args: LoadWorkerInput = { file: file.file };
+        console.time(timerKey);
+        const args: LoadWorkerInput = {
+            file: file.file,
+        };
         workers
             .add<LoadWorkerResult>(loadWorker, args)
             .then((result) => {
-                Timer.stop(timerKey);
+                console.timeEnd(timerKey);
                 const loadedFile: LoadedFile = {
                     ...file,
                     ...result,
@@ -94,10 +96,11 @@ export function App(): JSX.Element {
             return;
         }
         file.isProcessing = true;
+        forceUpdate();
         const timerKey = `${file.file.name} [2.x] Calculate details`;
-        Timer.start(timerKey);
+        console.time(timerKey);
         const args: DetailedWorkerInput = {
-            channels: [],
+            channels: file.channels,
             peak: file.peak,
             sampleRate: file.sampleRate,
             numSamples: file.numSamples,
@@ -105,15 +108,11 @@ export function App(): JSX.Element {
             filename: file.file.name,
         };
         // Transfer channels to new thread. Increased performance instead of copy.
-        const transfer: Transferable[] = [];
-        for (let i = 0; i < file.channels.length; ++i) {
-            args.channels[i] = file.channels[i];
-            transfer[i] = file.channels[i].graph.buffer;
-        }
+        const transfer = file.channels.map((c) => c.graph.buffer);
         workers
             .add<DetailedWorkerResult>(detailedWorker, args, transfer)
             .then((result) => {
-                Timer.stop(timerKey);
+                console.timeEnd(timerKey);
                 const detailedFile: DetailedFile = {
                     ...file,
                     ...result,
@@ -169,7 +168,7 @@ export function App(): JSX.Element {
     };
 
     return (
-        <div onDrop={onDrop} onDragOver={onDragOver}>
+        <div className="row" onDrop={onDrop} onDragOver={onDragOver}>
             <Sidebar
                 files={files}
                 selectedFile={selectedFile}
@@ -180,7 +179,7 @@ export function App(): JSX.Element {
                 analyzeAll={analyzeAll}
                 saveImage={saveImage}
             />
-            <div id="mainCell">
+            <div className="col h-100 overflow-auto p-0">
                 {selectedFile != null ? (
                     <Detailes file={selectedFile} />
                 ) : (

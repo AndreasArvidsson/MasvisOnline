@@ -7,8 +7,13 @@ import {
     calculatePow2Size,
     freqToBinIndex,
 } from "./dsp/FFT";
-import type { GraphOptions } from "./GraphOptions";
-import type { AnalysisFile, DetailedChannel, DetailedFile } from "./types";
+import { IconLoading } from "./IconLoading";
+import type { GraphOptions } from "./types/GraphOptions";
+import type {
+    AnalysisFile,
+    DetailedChannel,
+    DetailedFile,
+} from "./types/types";
 import {
     getBorder,
     getColor,
@@ -19,7 +24,7 @@ import {
     tickerValuePostFormatter,
     tickerValuePreFormatter,
     toDb,
-} from "./util";
+} from "./util/util";
 import { VersionTag } from "./VersionTag";
 
 interface DetailesProps {
@@ -28,13 +33,15 @@ interface DetailesProps {
 
 export function Detailes({ file }: DetailesProps): JSX.Element {
     return (
-        <div className="main" id="main-details">
+        <div id="main-details">
             <h2 className="detailes-title">{file.file.name}</h2>
 
             {file.type === "detailed" ? (
                 <DetailedGraphs file={file} />
             ) : (
-                <div>Loading...</div>
+                <div className="fs-5 ps-3">
+                    <IconLoading /> Loading...
+                </div>
             )}
 
             <VersionTag />
@@ -99,7 +106,7 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
         if (channel.loudestPart != null) {
             const minOffset = Math.round(file.numSamples * 0.0004);
             const loudestPartOffset = file.sampleRate * 0.05;
-            //Use a min offset so that the hightlight isn't to small.
+            // Use a min offset so that the hightlight isn't to small.
             const offset = Math.max(minOffset, loudestPartOffset);
             const minIndex = Math.max(0, channel.loudestPart.index - offset);
             const maxIndex = minIndex + 2 * offset;
@@ -130,7 +137,7 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
         const time = round(loudestPart.index / file.sampleRate, 2);
         const count = loudestPart.count;
         const title = `Loudest part (${name} ch, ${count} samples >95% during 20ms at ${time}s)`;
-        //Number of samples for 50ms.
+        // Number of samples for 50ms.
         const offset = file.sampleRate * 0.05;
         const minIndex = Math.max(0, loudestPart.index - offset);
         const maxIndex = minIndex + 2 * offset;

@@ -12,17 +12,6 @@ declare module "owp.get-html-as-image" {
     ): void;
 }
 
-declare module "owp.glyphicons" {
-    import type { ComponentType } from "react";
-
-    interface GlyphProps {
-        type: string;
-    }
-
-    const Glyph: ComponentType<GlyphProps>;
-    export default Glyph;
-}
-
 declare module "owp.graph-react" {
     import type { ComponentType, HTMLAttributes } from "react";
     import type { GraphOptions } from "./GraphOptions";

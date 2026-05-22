@@ -1,29 +1,22 @@
-.sidebar,
-.sidebar-bottom {
-    width: 500px;
-}
-
 .sidebar {
-    display: inline-block;
-    vertical-align: top;
+    position: relative;
     height: 100%;
     padding: 0;
     border-right: solid 1px;
 }
 
-.sidebar > input[type="file"] {
-    display: none;
-}
-
-.sidebar > div:nth-child(2),
-.sidebar > div:nth-child(3) {
-    height: 40px;
-}
-
-.sidebar > div:nth-child(2),
-.sidebar > div:nth-child(3) {
-    padding: 8px;
+.sidebar-header,
+.sidebar-overview {
+    padding: 0.5rem;
     border-bottom: 1px solid;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-top: solid 1px;
 }
 
 .sidebar-table-wrapper {
@@ -33,31 +26,18 @@
     max-height: calc(100% - 105px);
 }
 
-.sidebar-bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    height: 25px;
-    border-top: solid 1px;
-}
-
-.sidebar-bottom > div {
-    display: inline-block;
-    width: 33%;
-    text-align: center;
-}
-
 .sidebar table td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    padding: 5px;
+    padding: 0.375rem;
 }
 
-.selected {
+.selected-file,
+.selected-file > td {
     background-color: #cae1ff !important;
 }
 
 .table-col-icon {
-    width: 31px;
+    width: 2rem;
 }
