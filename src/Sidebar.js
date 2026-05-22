@@ -24,13 +24,13 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
             />
 
             <div>
-                <span
+                <button
                     className="clickable"
                     onClick={() => inputRef.current.click()}
                     title={"Add new file.\nFiles can also be dropped anywhere on this page."}
                 >
                     Add files <Glyph type="plus" />
-                </span>
+                </button>
                 <span style={{ float: "right" }}>
                     <a
                         className="clickable"
@@ -81,31 +81,31 @@ const Sidebar = ({ files, selectedFile, selectFile, addFiles, removeFile, remove
 
             <div className="sidebar-bottom">
                 <div>
-                    <span
+                    <button
                         className="clickable"
                         onClick={removeAllFiles}
                         title="Clear list and remove all files"
                     >
                         Clear <Glyph type="trash" />
-                    </span>
+                    </button>
                 </div>
                 <div>
-                    <span
+                    <button
                         className="clickable"
                         onClick={analyzeAll}
                         title="Analyse all tracks and calculate details"
                     >
                         Analyze all <Glyph type="search" />
-                    </span>
+                    </button>
                 </div>
                 <div>
-                    <span
+                    <button
                         className="clickable"
                         onClick={saveImage}
                         title={"Download image of: " + (selectedFile ? selectedFile.file.name : "Overview")}
                     >
                         Save image <Glyph type="download" />
-                    </span>
+                    </button>
                 </div>
             </div>
 
