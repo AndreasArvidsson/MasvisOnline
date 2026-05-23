@@ -18,7 +18,7 @@ import type {
     LoadWorkerInput,
     LoadWorkerResult,
     UnloadedFile,
-} from "./types/types";
+} from "./types";
 import { notifyError } from "./util/notifyError";
 
 let nextState = 1;

@@ -7,7 +7,7 @@ import type {
     Histogram,
     LoudestPart,
     PeakVsRms,
-} from "./types/types";
+} from "./types";
 import { toDb } from "./util/toDb";
 
 onmessage = (e: MessageEvent<DetailedWorkerInput>) => {

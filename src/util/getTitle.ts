@@ -1,9 +1,6 @@
-export function getTitle(title: string): {
-    label: string;
-    align: string;
-    size: number;
-    padding: number;
-} {
+import type { GraphOptions } from "owp.graph-react";
+
+export function getTitle(title: string): GraphOptions["title"] {
     return {
         label: title,
         align: "left",

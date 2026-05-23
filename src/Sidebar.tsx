@@ -13,7 +13,7 @@ import { IconButton } from "./IconButton";
 import { IconLoading } from "./IconLoading";
 import { IconPlaceholder } from "./IconPlaceholder";
 import "./Sidebar.css";
-import type { AnalysisFile } from "./types/types";
+import type { AnalysisFile } from "./types";
 import { classNames } from "./util/classNames";
 
 interface SidebarProps {

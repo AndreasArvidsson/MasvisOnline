@@ -1,6 +1,7 @@
 import Graph from "owp.graph-react";
-import type { JSX } from "react";
+import type { GraphOptions } from "owp.graph-react";
 import "./Detailes.css";
+import type { JSX } from "react";
 import {
     binIndexToFreq,
     calculateBandwidth,
@@ -8,12 +9,7 @@ import {
     freqToBinIndex,
 } from "./dsp/FFT";
 import { IconLoading } from "./IconLoading";
-import type { GraphOptions } from "./types/GraphOptions";
-import type {
-    AnalysisFile,
-    DetailedChannel,
-    DetailedFile,
-} from "./types/types";
+import type { AnalysisFile, DetailedChannel, DetailedFile } from "./types";
 import { getBorder } from "./util/getBorder";
 import { getColor } from "./util/getColor";
 import { getName } from "./util/getName";
@@ -212,7 +208,7 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
             file.duration,
         )} frames`;
 
-        const options = {
+        const options: GraphOptions = {
             interaction: {
                 trackMouse: false,
             },
@@ -339,7 +335,7 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
         }
 
         const bits = file.channels.map((c) => round(c.histogram.bits, 1));
-        const options = {
+        const options: GraphOptions = {
             interaction: {
                 trackMouse: false,
             },

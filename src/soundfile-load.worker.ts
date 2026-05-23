@@ -1,4 +1,4 @@
-import type { LoadWorkerInput, LoadWorkerResult } from "./types/types";
+import type { LoadWorkerInput, LoadWorkerResult } from "./types";
 import { AV } from "./util/AV";
 
 onmessage = (e: MessageEvent<LoadWorkerInput>) => {

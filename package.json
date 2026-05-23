@@ -1,6 +1,6 @@
 {
     "name": "masvis-online",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "type": "module",
     "scripts": {
         "clean": "rm -rf docs/*",
@@ -23,8 +23,8 @@
         "mp3": "^0.1.0",
         "owp.feedback": "^1.2.0",
         "owp.get-html-as-image": "^1.1.0",
-        "owp.graph-react": "^1.0.0",
-        "owp.graph": "^2.6.1",
+        "owp.graph-react": "^2.0.0",
+        "owp.graph": "^4.0.0",
         "owp.workers": "^1.2.0",
         "prop-types": "^15.8.1",
         "react-bootstrap-icons": "^1.11.6",

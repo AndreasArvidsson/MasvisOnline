@@ -1,9 +1,10 @@
+import type { GraphOptions } from "owp.graph-react";
 import Graph from "owp.graph-react";
-import { memo } from "react";
+import "owp.graph-react/style.css";
 import type { JSX } from "react";
+import { memo } from "react";
 import "./Overview.css";
-import type { GraphOptions } from "./types/GraphOptions";
-import type { AnalysisFile } from "./types/types";
+import type { AnalysisFile } from "./types";
 import { getBorder } from "./util/getBorder";
 import { getColor } from "./util/getColor";
 import { getTitle } from "./util/getTitle";
