@@ -502,13 +502,21 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
 
 const yWidth = 40;
 
+/**
+ * Formats the checksum number as a string with spaces as thousand separators.
+ */
 function getChecksumString(checksum: number) {
     const str = checksum.toString();
     const parts = [];
-    for (let i = str.length; i >= 0; i -= 3) {
-        parts.push(str.slice(i - 3, i));
+    let count = 0;
+    for (let i = str.length - 1; i >= 0; i--) {
+        if (count > 0 && count % 3 === 0) {
+            parts.push(" ");
+        }
+        parts.push(str[i]);
+        count++;
     }
-    return parts.toReversed().join(" ");
+    return parts.toReversed().join("");
 }
 
 function tickerLabelFormatter(
