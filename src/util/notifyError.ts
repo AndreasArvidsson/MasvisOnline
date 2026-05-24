@@ -1,12 +1,7 @@
 import Feedback from "owp.feedback";
+import { getErrorMessage } from "./getErrorMessage";
 
 export function notifyError(error: unknown): void {
-    Feedback.error(getErrorMessage(error), { sticky: true });
-}
-
-function getErrorMessage(error: unknown): string {
-    if (error instanceof Error) {
-        return error.message;
-    }
-    return String(error);
+    const message = typeof error === "string" ? error : getErrorMessage(error);
+    Feedback.error(message, { sticky: true });
 }

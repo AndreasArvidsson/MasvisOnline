@@ -50,7 +50,18 @@ export interface DetailedFile
     key: string;
 }
 
-export type AnalysisFile = UnloadedFile | LoadedFile | DetailedFile;
+export interface FailedFile {
+    type: "failed";
+    file: File;
+    key: string;
+    reason: string;
+}
+
+export type AnalysisFile =
+    | UnloadedFile
+    | LoadedFile
+    | DetailedFile
+    | FailedFile;
 
 export interface LoadWorkerInput {
     file: File;
@@ -67,6 +78,12 @@ export interface LoadWorkerResult {
     crest: number;
     channels: OverviewChannel[];
 }
+
+export interface WorkerErrorResult {
+    error: Error;
+}
+
+export type LoadWorkerOutput = LoadWorkerResult | WorkerErrorResult;
 
 export interface DetailedWorkerInput {
     channels: OverviewChannel[];

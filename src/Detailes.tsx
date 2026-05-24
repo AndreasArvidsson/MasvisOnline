@@ -2,6 +2,7 @@ import Graph from "owp.graph-react";
 import type { GraphOptions } from "owp.graph-react";
 import "./Detailes.css";
 import type { JSX } from "react";
+import { ExclamationCircle } from "react-bootstrap-icons";
 import {
     binIndexToFreq,
     calculateBandwidth,
@@ -26,20 +27,33 @@ interface DetailesProps {
 }
 
 export function Detailes({ file }: DetailesProps): JSX.Element {
-    return (
-        <div id="main-details">
-            <h2 className="detailes-title">{file.file.name}</h2>
-
-            {file.type === "detailed" ? (
+    const renderContent = () => {
+        if (file.type === "detailed") {
+            return (
                 <>
                     <DetailedGraphs file={file} />
                     <VersionTag />
                 </>
-            ) : (
+            );
+        }
+        if (file.type === "failed") {
+            return (
                 <div className="fs-5 text-center">
-                    <IconLoading /> Loading...
+                    <ExclamationCircle /> {file.reason}
                 </div>
-            )}
+            );
+        }
+        return (
+            <div className="fs-5 text-center">
+                <IconLoading /> Loading...
+            </div>
+        );
+    };
+
+    return (
+        <div id="main-details">
+            <h2 className="detailes-title">{file.file.name}</h2>
+            {renderContent()}
         </div>
     );
 }

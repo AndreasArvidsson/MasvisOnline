@@ -59,7 +59,15 @@ const OverviewFile = memo(
             },
         };
 
-        if (f.type !== "unloaded") {
+        if (f.type === "unloaded") {
+            options.spinner = {
+                show: true,
+                radius: 10,
+                lines: 9,
+                length: 10,
+                width: 5,
+            };
+        } else if (f.type !== "failed") {
             options.graph = {
                 ...options.graph,
                 dataY: f.channels.map((c) => c.graph),
@@ -68,22 +76,14 @@ const OverviewFile = memo(
                     ...f.channels.map((c, i) => getColor(i + 1)),
                 ],
             };
-        } else {
-            options.spinner = {
-                show: true,
-                radius: 10,
-                lines: 9,
-                length: 10,
-                width: 5,
-            };
         }
 
         return (
             <div key={f.key} className="graph-row">
                 <Graph className="overview-graph-div" options={options} />
                 <div className="overview-graph-data-table">
-                    <table>
-                        {f.type !== "unloaded" && (
+                    {f.type !== "unloaded" && f.type !== "failed" && (
+                        <table>
                             <tbody>
                                 <tr>
                                     <td>Crest</td>
@@ -96,8 +96,8 @@ const OverviewFile = memo(
                                     </td>
                                 </tr>
                             </tbody>
-                        )}
-                    </table>
+                        </table>
+                    )}
                 </div>
             </div>
         );

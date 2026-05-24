@@ -3,6 +3,7 @@ import { useRef } from "react";
 import {
     BarChartFill,
     Download,
+    ExclamationCircle,
     EyeFill,
     InfoCircle,
     PlusLg,
@@ -194,6 +195,9 @@ export function Sidebar({
 function renderIcon(file: AnalysisFile): JSX.Element {
     if (file.type === "detailed") {
         return <BarChartFill />;
+    }
+    if (file.type === "failed") {
+        return <ExclamationCircle />;
     }
     if (file.isProcessing) {
         return <IconLoading />;

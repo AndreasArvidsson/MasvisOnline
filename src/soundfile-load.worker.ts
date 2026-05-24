@@ -43,7 +43,7 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
     };
 
     asset.on("error", (error) => {
-        throw error;
+        postMessage({ error });
     });
 
     asset.on("format", (f: AudioFormat) => {

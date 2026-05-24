@@ -14,11 +14,13 @@ import type {
     DetailedFile,
     DetailedWorkerInput,
     DetailedWorkerResult,
+    FailedFile,
     LoadedFile,
     LoadWorkerInput,
-    LoadWorkerResult,
+    LoadWorkerOutput,
     UnloadedFile,
 } from "./types";
+import { getErrorMessage } from "./util/getErrorMessage";
 import { notifyError } from "./util/notifyError";
 
 let nextState = 1;
@@ -78,8 +80,11 @@ export function App(): JSX.Element {
             file: file.file,
         };
         workers
-            .add<LoadWorkerResult>(loadWorker, args)
+            .add<LoadWorkerOutput>(loadWorker, args)
             .then((result) => {
+                if ("error" in result) {
+                    throw result.error;
+                }
                 console.timeEnd(timerKey);
                 const loadedFile: LoadedFile = {
                     ...file,
@@ -90,7 +95,18 @@ export function App(): JSX.Element {
                 Object.assign(file, loadedFile);
                 forceUpdate();
             })
-            .catch(notifyError);
+            .catch((error: unknown) => {
+                console.timeEnd(timerKey);
+                const reason = `Failed to load file: ${getErrorMessage(error)}`;
+                const failedFile: FailedFile = {
+                    ...file,
+                    type: "failed",
+                    reason,
+                };
+                Object.assign(file, failedFile);
+                forceUpdate();
+                notifyError(reason);
+            });
     };
 
     const calculateDetails = (file: LoadedFile) => {
