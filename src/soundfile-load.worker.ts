@@ -107,7 +107,7 @@ function parseBuffer({
 
         // Iterate each sample for this channel
         for (let s = c, i = -1; s < buffer.length; s += numChannels) {
-            const sample = Math.min(1, Math.max(-1, buffer[s]));
+            const sample = normalizeAudioSample(buffer[s]);
             graphData[++i] = sample;
             peakC = Math.max(peakC, Math.abs(sample));
             sqrSumC += sample ** 2;
@@ -145,4 +145,12 @@ function parseBuffer({
     console.timeEnd(timerKey);
 
     return result;
+}
+
+function normalizeAudioSample(sample: number): number {
+    if (Number.isNaN(sample)) {
+        return 0;
+    }
+
+    return Math.min(1, Math.max(-1, sample));
 }

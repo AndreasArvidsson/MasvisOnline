@@ -175,11 +175,12 @@ export function Sidebar({
                 multiple
                 accept={[
                     ".wav",
-                    ".aac",
-                    ".alac",
                     ".flac",
                     ".mp3",
-                    ".ogg",
+                    ".m4a",
+                    ".mp4",
+                    ".aac",
+                    ".alac",
                     "audio/*",
                 ].join(",")}
             />
