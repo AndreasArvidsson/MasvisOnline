@@ -55,6 +55,7 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
     });
 
     asset.on("duration", (d) => {
+        // Duration is in milliseconds. Convert to seconds and round down to prevent small rounding errors.
         duration = Math.floor(d / 1000);
         checkIfLoaded();
     });
@@ -107,9 +108,10 @@ function parseBuffer({
 
         // Iterate each sample for this channel
         for (let s = c, i = -1; s < buffer.length; s += numChannels) {
-            graphData[++i] = buffer[s];
-            peakC = Math.max(peakC, Math.abs(buffer[s]));
-            sqrSumC += buffer[s] ** 2;
+            const sample = Math.min(1, Math.max(-1, buffer[s]));
+            graphData[++i] = sample;
+            peakC = Math.max(peakC, Math.abs(sample));
+            sqrSumC += sample ** 2;
         }
 
         // Calculate channels stats.
