@@ -60,8 +60,8 @@ function calculateLoudestPart(data: DetailedWorkerInput): {
     console.time(timerKey);
     // Loudest part threshold.
     const threshold = data.peak * 0.95;
-    // Number of samples for a 20ms window.
-    const windowSize = data.sampleRate * 0.02;
+    // Number of samples for a 20 ms window.
+    const windowSize = Math.round(data.sampleRate * 0.02);
     let maxCount = 0;
     let loudestChannel = 0;
     let maxIndex = 0;
@@ -87,7 +87,7 @@ function calculateLoudestPart(data: DetailedWorkerInput): {
         size = graph.length - 1;
 
         while (end < size) {
-            // Oldest sample(now to be removed) was above threshold. Decrease count.
+            // Oldest sample (now to be removed) was above threshold. Decrease count.
             if (Math.abs(graph[start++]) > threshold) {
                 --count;
             }
@@ -116,7 +116,7 @@ function calculateLoudestPart(data: DetailedWorkerInput): {
         channel: loudestChannel,
         loudestPart: {
             count: maxCount,
-            index: maxIndex + windowSize / 2,
+            index: Math.floor(maxIndex + windowSize / 2),
         },
     };
 }

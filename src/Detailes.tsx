@@ -14,7 +14,7 @@ import { getBorder } from "./util/getBorder";
 import { getColor } from "./util/getColor";
 import { getName } from "./util/getName";
 import { getTitle } from "./util/getTitle";
-import { round } from "./util/round";
+import { roundFixed } from "./util/round";
 import { tickerLabelformatterTime } from "./util/tickerLabelformatterTime";
 import { tickerValuePostFormatter } from "./util/tickerValuePostFormatter";
 import { tickerValuePreFormatter } from "./util/tickerValuePreFormatter";
@@ -129,9 +129,9 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
             return null;
         }
         const name = getName(i + 1);
-        const time = round(loudestPart.index / file.sampleRate, 2);
+        const time = roundFixed(loudestPart.index / file.sampleRate, 2);
         const count = loudestPart.count;
-        const title = `Loudest part (${name} ch, ${count} samples >95% during 20ms at ${time}s)`;
+        const title = `Loudest part (${name} ch, ${count} samples >95% during 20 ms at ${time} s)`;
         // Number of samples for 50ms.
         const offset = file.sampleRate * 0.05;
         const minIndex = Math.max(0, loudestPart.index - offset);
@@ -334,12 +334,14 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
             return defaultFormatter(indexToValue(value));
         }
 
-        const bits = file.channels.map((c) => round(c.histogram.bits, 1));
+        const bits = file.channels
+            .map((c) => roundFixed(c.histogram.bits, 1))
+            .join("/");
         const options: GraphOptions = {
             interaction: {
                 trackMouse: false,
             },
-            title: getTitle(`Histogram, "bits": ${bits.join("/")}`),
+            title: getTitle(`Histogram, "bits": ${bits}`),
             border: getBorder(),
             graph: {
                 simplify: 1,

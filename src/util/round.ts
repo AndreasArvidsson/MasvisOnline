@@ -1,5 +1,8 @@
-export function round(value: number, decimals: number): string {
+export function round(value: number, decimals: number): number {
     const multiplier = 10 ** decimals;
-    const rounded = Math.round(value * multiplier) / multiplier;
-    return rounded.toFixed(decimals);
+    return Math.round(value * multiplier) / multiplier;
+}
+
+export function roundFixed(value: number, decimals: number): string {
+    return round(value, decimals).toFixed(decimals);
 }

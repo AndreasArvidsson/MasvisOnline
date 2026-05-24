@@ -1,3 +1,5 @@
+import { round } from "./round";
+
 type DefaultFormatter = (value: number) => string;
 
 export function tickerLabelformatterTime(
@@ -5,5 +7,5 @@ export function tickerLabelformatterTime(
     value: number,
     defaultFormatter: DefaultFormatter,
 ): string {
-    return defaultFormatter(value / sampleRate);
+    return defaultFormatter(round(value / sampleRate, 2));
 }
