@@ -55,8 +55,7 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
     });
 
     asset.on("duration", (d) => {
-        // Duration is in milliseconds. Convert to seconds and round down to prevent small rounding errors.
-        duration = Math.floor(d / 1000);
+        duration = d;
         checkIfLoaded();
     });
 

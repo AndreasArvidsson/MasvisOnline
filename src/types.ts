@@ -71,6 +71,7 @@ export interface LoadWorkerResult {
     numChannels: number;
     sampleRate: number;
     bitDepth: number;
+    // Duration in ms.
     duration: number;
     numSamples: number;
     peak: number;

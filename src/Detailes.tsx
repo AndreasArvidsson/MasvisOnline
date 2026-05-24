@@ -218,7 +218,7 @@ function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
             return defaultFormatter(value);
         }
 
-        const title = `Normalized average spectrum, ${Math.ceil(
+        const title = `Normalized average spectrum, ${millisecondsToIntSeconds(
             file.duration,
         )} frames`;
 
@@ -545,4 +545,8 @@ function tickerLabelFormatter(
         return maxLabel;
     }
     return defaultFormatter(value);
+}
+
+function millisecondsToIntSeconds(ms: number): number {
+    return Math.floor(ms / 1000);
 }
