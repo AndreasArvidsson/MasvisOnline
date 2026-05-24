@@ -8,7 +8,7 @@ import type { AnalysisFile } from "./types";
 import { getBorder } from "./util/getBorder";
 import { getColor } from "./util/getColor";
 import { getTitle } from "./util/getTitle";
-import { toDb } from "./util/toDb";
+import { toDbString } from "./util/toDb";
 import { VersionTag } from "./VersionTag";
 
 interface OverviewProps {
@@ -87,11 +87,13 @@ const OverviewFile = memo(
                             <tbody>
                                 <tr>
                                     <td>Crest</td>
-                                    <td>&nbsp;= {toDb(f.crest, 1)} dB</td>
+                                    <td>&nbsp;= {toDbString(f.crest, 1)} dB</td>
                                 </tr>
                                 <tr>
                                     <td>Peak</td>
-                                    <td>&nbsp;= {toDb(f.peak, 1)} dBFS</td>
+                                    <td>
+                                        &nbsp;= {toDbString(f.peak, 1)} dBFS
+                                    </td>
                                 </tr>
                             </tbody>
                         )}

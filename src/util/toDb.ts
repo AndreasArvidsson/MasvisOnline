@@ -1,8 +1,10 @@
 import { round } from "./round";
 
-export function toDb(value: number, decimals?: number): number {
-    if (decimals != null) {
-        return round(20 * Math.log10(value), decimals);
-    }
+export function toDb(value: number): number {
     return 20 * Math.log10(value);
+}
+
+export function toDbString(value: number, decimals: number): string {
+    const db = toDb(value);
+    return round(db, decimals);
 }

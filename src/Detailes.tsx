@@ -18,7 +18,7 @@ import { round } from "./util/round";
 import { tickerLabelformatterTime } from "./util/tickerLabelformatterTime";
 import { tickerValuePostFormatter } from "./util/tickerValuePostFormatter";
 import { tickerValuePreFormatter } from "./util/tickerValuePreFormatter";
-import { toDb } from "./util/toDb";
+import { toDb, toDbString } from "./util/toDb";
 import { VersionTag } from "./VersionTag";
 
 interface DetailesProps {
@@ -46,9 +46,9 @@ export function Detailes({ file }: DetailesProps): JSX.Element {
 
 function DetailedGraphs({ file }: { file: DetailedFile }): JSX.Element {
     const renderChannel = (channel: DetailedChannel, i: number) => {
-        const crest = toDb(channel.crest, 2);
-        const rms = toDb(channel.rms, 2);
-        const peak = toDb(channel.peak, 2);
+        const crest = toDbString(channel.crest, 2);
+        const rms = toDbString(channel.rms, 2);
+        const peak = toDbString(channel.peak, 2);
         const title = `${getName(i + 1)}: Crest=${crest} dB, RMS=${rms} dBFS, Peak=${peak} dBFS`;
 
         const options: GraphOptions = {
