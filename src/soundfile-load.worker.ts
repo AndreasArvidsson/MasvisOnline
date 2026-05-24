@@ -46,10 +46,11 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
         throw error;
     });
 
-    asset.on("format", (f) => {
+    asset.on("format", (f: AudioFormat) => {
         numChannels = f.channelsPerFrame;
         sampleRate = f.sampleRate;
-        bitDepth = f.bitsPerChannel;
+        // For example for mp3 files bitsPerChannel is not provided. Default to 16 bit depth like MasVis.exe.
+        bitDepth = f.bitsPerChannel ?? 16;
         checkIfLoaded();
     });
 
@@ -63,6 +64,12 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
         checkIfLoaded();
     });
 };
+
+interface AudioFormat {
+    channelsPerFrame: number;
+    sampleRate: number;
+    bitsPerChannel?: number;
+}
 
 interface ParseProps {
     file: File;
