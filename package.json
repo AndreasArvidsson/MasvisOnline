@@ -3,9 +3,9 @@
     "version": "1.5.0",
     "type": "module",
     "scripts": {
-        "clean": "rm -rf docs/*",
+        "clean": "rm -rf docs",
         "start": "vite",
-        "build": "npm run clean && vite build",
+        "build": "vite build",
         "typecheck": "tsc --noEmit",
         "lint": "npm run typecheck && npm run lint:ts && npm run lint:fmt",
         "lint:ts": "oxlint -c oxlint.config.mts --deny-warnings .",

@@ -29,6 +29,7 @@ export default defineConfig((): UserConfig => {
         build: {
             outDir: path.join(__dirname, "docs"),
             target: "es2020",
+            assetsDir: "",
             sourcemap: true,
 
             rollupOptions: {
