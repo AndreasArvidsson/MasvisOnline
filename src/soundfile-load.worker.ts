@@ -1,6 +1,8 @@
 import type { LoadWorkerInput, LoadWorkerResult } from "./types";
 import { AV } from "./util/AV";
 
+const overviewGraphWidth = 645;
+
 onmessage = (e: MessageEvent<LoadWorkerInput>) => {
     const file = e.data.file;
     const timerKey = `${file.name} [1.1] Decode file to buffer`;
@@ -37,7 +39,10 @@ onmessage = (e: MessageEvent<LoadWorkerInput>) => {
         });
 
         // Add arrays buffers to the transfer list. Decreases message time.
-        const transfer = result.channels.map((c) => c.graph.buffer);
+        const transfer: Transferable[] = result.channels.flatMap((c) => [
+            c.graph.buffer,
+            c.overviewGraph.buffer,
+        ]);
 
         postMessage(result, { transfer });
     };
@@ -93,9 +98,9 @@ function parseBuffer({
 
     // Divide sampledata into channels and calculate channel stats.
     const channels = [];
+    const numSamples = buffer.length / numChannels;
     let sqrSum = 0;
     let peak = 0;
-    const numSamples = buffer.length / numChannels;
 
     for (let c = 0; c < numChannels; ++c) {
         // Graph data for each channel.
@@ -105,13 +110,21 @@ function parseBuffer({
         // Peak level for each channel.
         let peakC = 0;
 
-        // Iterate each sample for this channel
+        // Iterate each sample for this channel. NOTE: performance hot path.
         for (let s = c, i = -1; s < buffer.length; s += numChannels) {
-            const sample = normalizeAudioSample(buffer[s]);
+            const sample = buffer[s];
+            const absSample = Math.abs(sample);
+
             graphData[++i] = sample;
-            peakC = Math.max(peakC, Math.abs(sample));
-            sqrSumC += sample ** 2;
+            sqrSumC += sample * sample;
+
+            if (absSample > peakC) {
+                peakC = absSample;
+            }
         }
+
+        // Clamp value to prevent issues with malformed files.
+        peakC = Math.min(peakC, 1);
 
         // Calculate channels stats.
         const rms = Math.sqrt(sqrSumC / numSamples);
@@ -120,9 +133,10 @@ function parseBuffer({
             rms,
             crest: peakC / rms,
             graph: graphData,
+            overviewGraph: createOverviewGraph(graphData),
         };
 
-        // For entire file:
+        // Calculate stats for the entire file.
         sqrSum += sqrSumC;
         peak = Math.max(peak, peakC);
     }
@@ -147,10 +161,32 @@ function parseBuffer({
     return result;
 }
 
-function normalizeAudioSample(sample: number): number {
-    if (Number.isNaN(sample)) {
-        return 0;
+function createOverviewGraph(graph: Float32Array): Float32Array {
+    if (graph.length <= overviewGraphWidth * 2) {
+        return graph.slice();
     }
 
-    return Math.min(1, Math.max(-1, sample));
+    const overviewGraph = new Float32Array(overviewGraphWidth * 2);
+    const samplesPerPixel = graph.length / overviewGraphWidth;
+
+    for (let i = 0; i < overviewGraphWidth; ++i) {
+        const start = Math.floor(i * samplesPerPixel);
+        const end = Math.min(
+            graph.length,
+            Math.floor((i + 1) * samplesPerPixel),
+        );
+        let min = graph[start];
+        let max = graph[start];
+
+        for (let i = start + 1; i < end; ++i) {
+            const sample = graph[i];
+            min = Math.min(min, sample);
+            max = Math.max(max, sample);
+        }
+
+        overviewGraph[i * 2] = min;
+        overviewGraph[i * 2 + 1] = max;
+    }
+
+    return overviewGraph;
 }

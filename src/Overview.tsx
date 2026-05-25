@@ -52,6 +52,10 @@ const OverviewFile = memo(
                 },
                 y: {
                     show: false,
+                    bounds: {
+                        min: -1,
+                        max: 1,
+                    },
                 },
             },
             spinner: {
@@ -70,7 +74,7 @@ const OverviewFile = memo(
         } else if (f.type !== "failed") {
             options.graph = {
                 ...options.graph,
-                dataY: f.channels.map((c) => c.graph),
+                dataY: f.channels.map((c) => c.overviewGraph),
                 colors: [
                     getColor(0),
                     ...f.channels.map((c, i) => getColor(i + 1)),

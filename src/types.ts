@@ -19,6 +19,7 @@ export interface OverviewChannel {
     rms: number;
     crest: number;
     graph: Float32Array;
+    overviewGraph: Float32Array;
 }
 
 export interface DetailedChannel extends OverviewChannel {
